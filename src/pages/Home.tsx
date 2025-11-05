@@ -110,9 +110,9 @@ export default function Home() {
         <meta name="twitter:image" content={`${import.meta.env.VITE_SITE_URL}/og.png`} />
 
         {/* Favicons */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16.png" />
-        <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#0B1220" />
       </Helmet>
 
