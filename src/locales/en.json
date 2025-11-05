@@ -1,0 +1,115 @@
+{
+  "app.title": "Top Game Score",
+  "home.subtitle": "Create a quiz and share the code with your audience.",
+  "ttl.warning": "This group and its data will be automatically deleted in 7 days.",
+
+  "home.ctaCreateQuiz": "Create quiz",
+  "home.modal.title": "Choose an option",
+  "home.modal.login": "Sign in",
+  "home.modal.register": "Create account",
+  "home.modal.loginTitle": "Sign in to your host account",
+  "home.modal.registerTitle": "Create your host account",
+  "home.usernameHint": "Your username will be used as email internally (username@host.local). No spaces.",
+  "common.dashboard": "Dashboard",
+  "common.back": "Back",
+
+  "home.host.username": "Username (no spaces)",
+  "home.host.password": "Password",
+  "home.host.errors.usernameOrPassword": "Enter a username (no spaces) and a password.",
+  "home.host.errors.loginGeneric": "Login error. Please try again.",
+  "home.host.errors.registerGeneric": "Could not create the account. Please try again.",
+
+  "home.join.label": "Join with group code",
+  "home.join.placeholder": "code",
+  "home.join.button": "Join",
+  "join.name": "Your name",
+  "join.handle": "Your handle",  
+
+  "brand": "TopGameScore",
+  "seo": {
+    "title": "Host Panel",
+    "description": "Create, manage and control your live quizzes in real time with TopGameScore — the smart way to play and compete."
+  },
+  "common": {
+    "back": "Back",
+    "copied": "Copied!"
+  },
+  "host": {
+    "heading": "Host",
+    "mustSignIn": "Please sign in as host to control the quiz.",
+    "warning": "This group will be automatically deleted in 7 days.",
+    "warningDays_one": "This group will be automatically deleted in {{count}} day.",
+    "warningDays_other": "This group will be automatically deleted in {{count}} days.",
+    "locale": "Lang: {{lng}}",
+    "status": {
+      "draft": "Draft",
+      "open": "Open",
+      "finished": "Finished"
+    },
+    "questionsCount": "{{count}} question",
+    "questionsCount_plural": "{{count}} questions",
+    "editor": {
+      "title": "Questions"
+    },
+    "controls": {
+      "title": "Controls",
+      "start": "START QUIZ",
+      "finish": "FINISH QUIZ",
+      "linkLabel": "Players join using:",
+      "copy": "Copy link"
+    },
+    "playersJoinAt": "Players join at:",
+    "errors": {
+      "open": "Failed to open quiz. Check Firestore rules and hostUid.",
+      "finish": "Failed to finish quiz. Check Firestore rules."
+    }
+  },
+  "create": {
+    "title": "Setup Quiz",
+    "setupTitle": "Basic settings",
+    "fields": {
+      "title": "Title",
+      "titlePlaceholder": "Quiz",
+      "maxTime": "Max time (sec)",
+      "maxTimeHint": "Allowed range: 5–300 seconds.",
+      "language": "Language"
+    },
+    "lang": {
+      "en": "English",
+      "pt": "Portuguese",
+      "es": "Spanish"
+    },
+    "questions": {
+      "title": "Questions",
+      "placeholderQuestion": "Question",
+      "option": "Option",
+      "correct": "correct",
+      "add": "Add question",
+      "remove": "remove"
+    },
+    "cta": {
+      "createGroup": "Create group"
+    },
+    "ttl": "This group and its data will be automatically deleted in 7 days.",
+    "toast": {
+      "signInRequired": "Please sign in as host."
+    },
+    "validation": {
+      "questionIncomplete": "Fill in the question and all options before adding."
+    }
+  },
+  "editor": {
+    "title": "Questions",
+    "subtitle": "{{count}} question(s) added",
+    "placeholder": {
+      "question": "Enter your question",
+      "option": "Option"
+    },
+    "correct": "correct",
+    "addQuestion": "Add Question",
+    "remove": "remove",
+    "validation": {
+      "incomplete": "Please fill out all fields before adding."
+    }
+  }
+}

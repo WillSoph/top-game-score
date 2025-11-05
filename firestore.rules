@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    match /groups/{groupId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.hostUid == request.auth.uid;
+
+      match /players/{playerId} {
+        allow read: if true;
+        allow create: if true;
+        allow update, delete: if request.auth != null && request.auth.uid == playerId;
+      }
+      match /questions/{questionId} {
+        allow read: if true;
+        allow write: if request.auth != null &&
+          get(/databases/$(db)/documents/groups/$(groupId)).data.hostUid == request.auth.uid;
+      }
+      match /answers/{answerId} {
+        allow read: if true;
+        allow create: if request.auth != null && request.resource.data.playerId == request.auth.uid;
+      }
+    }
+  }
+}

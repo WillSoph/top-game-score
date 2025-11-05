@@ -1,0 +1,113 @@
+{
+  "app.title": "Top Game Score",
+  "home.subtitle": "Crea un quiz y comparte el código con tu audiencia.",
+  "ttl.warning": "Este grupo y sus datos se eliminarán automáticamente en 7 días.",
+
+  "home.ctaCreateQuiz": "Crear quiz",
+  "home.modal.title": "Elige una opción",
+  "home.modal.login": "Iniciar sesión",
+  "home.modal.register": "Crear cuenta",
+  "home.modal.loginTitle": "Inicia sesión en tu cuenta de anfitrión",
+  "home.modal.registerTitle": "Crea tu cuenta de anfitrión",
+  "home.usernameHint": "Tu usuario se usará como email interno (usuario@host.local). Sin espacios.",
+  "common.dashboard": "Panel",
+  "common.back": "Volver",
+
+  "home.host.username": "Usuario (sin espacios)",
+  "home.host.password": "Contraseña",
+  "home.host.errors.usernameOrPassword": "Indica un usuario (sin espacios) y una contraseña.",
+  "home.host.errors.loginGeneric": "Error de inicio de sesión. Inténtalo de nuevo.",
+  "home.host.errors.registerGeneric": "No se pudo crear la cuenta. Inténtalo de nuevo.",
+
+  "home.join.label": "Entrar con código del grupo",
+  "home.join.placeholder": "código",
+  "home.join.button": "Entrar",
+
+  "brand": "TopGameScore",
+  "seo": {
+    "title": "Panel del Anfitrión",
+    "description": "Crea, gestiona y controla tus cuestionarios en vivo en tiempo real con TopGameScore — la forma inteligente de jugar y competir."
+  },
+  "common": {
+    "back": "Volver",
+    "copied": "¡Copiado!"
+  },
+  "host": {
+    "heading": "Anfitrión",
+    "mustSignIn": "Inicia sesión como anfitrión para controlar el cuestionario.",
+    "warning": "Este grupo se eliminará automáticamente en 7 días.",
+    "warningDays_one": "Este grupo se eliminará automáticamente en {{count}} día.",
+    "warningDays_other": "Este grupo se eliminará automáticamente en {{count}} días.",
+    "locale": "Idioma: {{lng}}",
+    "status": {
+      "draft": "Borrador",
+      "open": "Abierto",
+      "finished": "Finalizado"
+    },
+    "questionsCount": "{{count}} pregunta",
+    "questionsCount_plural": "{{count}} preguntas",
+    "editor": {
+      "title": "Preguntas"
+    },
+    "controls": {
+      "title": "Controles",
+      "start": "INICIAR QUIZ",
+      "finish": "FINALIZAR QUIZ",
+      "linkLabel": "Los jugadores se unen usando:",
+      "copy": "Copiar enlace"
+    },
+    "playersJoinAt": "Los jugadores se unen en:",
+    "errors": {
+      "open": "No se pudo abrir el cuestionario. Verifica las reglas de Firestore y el hostUid.",
+      "finish": "No se pudo finalizar el cuestionario. Verifica las reglas de Firestore."
+    }
+  },
+  "create": {
+    "title": "Configurar Quiz",
+    "setupTitle": "Ajustes básicos",
+    "fields": {
+      "title": "Título",
+      "titlePlaceholder": "Quiz",
+      "maxTime": "Tiempo máximo (seg)",
+      "maxTimeHint": "Rango permitido: 5–300 segundos.",
+      "language": "Idioma"
+    },
+    "lang": {
+      "en": "Inglés",
+      "pt": "Portugués",
+      "es": "Español"
+    },
+    "questions": {
+      "title": "Preguntas",
+      "placeholderQuestion": "Pregunta",
+      "option": "Opción",
+      "correct": "correcta",
+      "add": "Agregar pregunta",
+      "remove": "eliminar"
+    },
+    "cta": {
+      "createGroup": "Crear grupo"
+    },
+    "ttl": "Este grupo y sus datos se eliminarán automáticamente en 7 días.",
+    "toast": {
+      "signInRequired": "Inicia sesión como anfitrión."
+    },
+    "validation": {
+      "questionIncomplete": "Completa la pregunta y todas las opciones antes de agregar."
+    }
+  },
+  "editor": {
+    "title": "Preguntas",
+    "subtitle": "{{count}} pregunta(s) agregada(s)",
+    "placeholder": {
+      "question": "Escribe la pregunta",
+      "option": "Opción"
+    },
+    "correct": "correcta",
+    "addQuestion": "Agregar pregunta",
+    "remove": "eliminar",
+    "validation": {
+      "incomplete": "Completa todos los campos antes de agregar."
+    }
+  }
+}
