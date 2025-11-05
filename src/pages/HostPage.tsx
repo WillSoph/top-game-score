@@ -22,7 +22,6 @@ export default function HostPage() {
 
   const [copied, setCopied] = useState(false);
 
-  // Garante host logado (não anônimo)
   function requireHost() {
     const u = auth.currentUser;
     const isAnon = !u || u.isAnonymous;
@@ -34,7 +33,6 @@ export default function HostPage() {
     return u;
   }
 
-  // Claim do hostUid se estiver ausente
   useEffect(() => {
     const u = auth.currentUser;
     if (!groupId || !group || !u || u.isAnonymous) return;
@@ -55,33 +53,26 @@ export default function HostPage() {
     return days > 0 ? days : 0;
   }
 
-  const daysLeft = getDaysLeft(group?.expiresAt) ?? 0;
-
-  // Abre o quiz (status = open)
   async function openQuiz() {
     const u = requireHost();
     if (!u) return;
     const updates: any = { status: 'open', roundStartedAt: null };
     const hostUid = (group as any)?.hostUid;
     if (!hostUid || hostUid === '') updates.hostUid = u.uid;
-
     try {
       await updateDoc(doc(db, 'groups', groupId!), updates);
-    } catch (e) {
-      console.error('openQuiz error', e);
+    } catch {
       alert(t('host.errors.open'));
     }
   }
 
-  // Finaliza o quiz (status = finished)
   async function finishQuiz() {
     const u = requireHost();
     if (!u) return;
     try {
       await updateDoc(doc(db, 'groups', groupId!), { status: 'finished' });
       nav(`/finished/${groupId}`);
-    } catch (e) {
-      console.error('finishQuiz error', e);
+    } catch {
       alert(t('host.errors.finish'));
     }
   }
@@ -93,14 +84,11 @@ export default function HostPage() {
       await navigator.clipboard.writeText(
         `${import.meta.env.VITE_SITE_URL?.replace(/\/$/, '')}${playerPath}`
       );
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
     } catch {
-      // fallback: copia somente o path
       await navigator.clipboard.writeText(playerPath);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
   }
 
   const statusColor =
@@ -115,25 +103,23 @@ export default function HostPage() {
       <Helmet>
         <title>{`${t('brand')} — ${t('seo.title')}`}</title>
         <meta name="description" content={t('seo.description')} />
-        <link
-          rel="canonical"
-          href={`${import.meta.env.VITE_SITE_URL}/play/${groupId}`}
-        />
+        <link rel="canonical" href={`${import.meta.env.VITE_SITE_URL}/play/${groupId}`} />
         <meta name="robots" content="noindex,follow" />
       </Helmet>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-6">
         {/* Top bar */}
-        <div className="flex items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <button
               onClick={() => history.back()}
-              className="text-sm text-slate-400 hover:text-slate-200"
+              className="text-sm text-slate-400 hover:text-slate-200 transition"
             >
               ← {t('common.back')}
             </button>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight">
-              {t('host.heading')} • <span className="font-mono">{groupId}</span>
+
+            <h1 className="mt-2 text-xl sm:text-2xl font-bold tracking-tight text-slate-100">
+              {t('host.heading')} • <span className="font-mono text-slate-400">{groupId}</span>
             </h1>
 
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
@@ -145,64 +131,67 @@ export default function HostPage() {
               </span>
               {(group as any)?.locale && (
                 <span className="px-2 py-0.5 rounded-full bg-slate-700/30 ring-1 ring-slate-700/60">
-                  {t('host.locale', { lng: ((group as any)?.locale?.toUpperCase?.() ?? 'EN') })}
+                  {t('host.locale', {
+                    lng: ((group as any)?.locale?.toUpperCase?.() ?? 'EN'),
+                  })}
                 </span>
               )}
             </div>
 
             {group?.expiresAt && (
-              <p className="mt-2 text-xs text-amber-300/90 border border-amber-500/30 rounded px-3 py-2 w-fit">
+              <p className="mt-2 text-xs text-amber-300/90 border border-amber-500/30 rounded-xl px-3 py-2 bg-amber-500/5 w-fit">
                 ⚠️ {t('host.warningDays', { count: getDaysLeft(group.expiresAt) ?? 0 })}
               </p>
             )}
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left column */}
+        {/* Layout principal */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Coluna esquerda */}
           <div className="space-y-6">
-            {/* Questions Card */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/40 shadow-sm">
+            {/* Editor de perguntas */}
+            <section className="rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm shadow-sm">
               <header className="px-4 py-3 border-b border-slate-800">
-                <h2 className="font-semibold">{t('host.editor.title')}</h2>
+                <h2 className="font-semibold text-slate-100">{t('host.editor.title')}</h2>
               </header>
               <div className="p-4">
                 <QuestionEditor groupId={groupId!} questions={questions} />
               </div>
             </section>
 
-            {/* Controls Card */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/40 shadow-sm">
+            {/* Controles */}
+            <section className="rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm shadow-sm">
               <header className="px-4 py-3 border-b border-slate-800">
-                <h3 className="font-semibold">{t('host.controls.title')}</h3>
+                <h3 className="font-semibold text-slate-100">{t('host.controls.title')}</h3>
               </header>
-              <div className="p-4">
-                <div className="flex flex-wrap gap-3">
+              <div className="p-4 space-y-4">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                   <button
                     onClick={openQuiz}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[.99] transition"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[.98] transition text-white font-medium"
                   >
                     <Play size={18} className="opacity-90" />
                     {t('host.controls.start')}
                   </button>
                   <button
                     onClick={finishQuiz}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-[.99] transition"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-[.98] transition text-white font-medium"
                   >
                     <Flag size={18} className="opacity-90" />
                     {t('host.controls.finish')}
                   </button>
                 </div>
 
-                <div className="mt-4 text-sm text-slate-300">
+                <div className="text-sm text-slate-300">
                   <div className="mb-1">{t('host.controls.linkLabel')}</div>
-                  <div className="flex items-center gap-2">
-                    <code className="font-mono text-slate-200 bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <code className="flex-1 font-mono text-slate-200 bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 break-all">
                       {playerPath}
                     </code>
                     <button
                       onClick={copyLink}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
+                      className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 transition text-slate-200 text-sm"
                       title={t('host.controls.copy')}
                     >
                       {copied ? (
@@ -223,14 +212,12 @@ export default function HostPage() {
             </section>
           </div>
 
-          {/* Right column */}
+          {/* Coluna direita */}
           <div className="space-y-6">
             <Leaderboard players={playersBoard} />
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/40 shadow-sm p-4 text-sm">
-              <div className="text-slate-300">
-                {t('host.playersJoinAt')}{' '}
-                <span className="font-mono">{playerPath}</span>
-              </div>
+            <section className="rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm shadow-sm p-4 text-sm text-slate-300">
+              {t('host.playersJoinAt')}{' '}
+              <span className="font-mono text-slate-100 break-all">{playerPath}</span>
             </section>
           </div>
         </div>

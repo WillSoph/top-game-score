@@ -88,7 +88,7 @@ export default function Home() {
 
   return (
     <>
-    <Helmet>
+      <Helmet>
         <html lang={i18n.language || 'en'} />
         <title>{t('seo.title')}</title>
         <meta name="description" content={t('seo.description')} />
@@ -115,19 +115,45 @@ export default function Home() {
         <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
         <meta name="theme-color" content="#0B1220" />
       </Helmet>
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
-      <div className="max-w-3xl mx-auto p-6">
-        {/* Top bar */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+
+      {/* BG com gradientes suaves; padding seguro para mobile topo/rodapé */}
+      <div className="min-h-screen pb-safe pt-safe bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
+        {/* container responsivo */}
+        <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 md:px-8 py-5 sm:py-6 md:py-8">
+          {/* Top bar */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
             {t('app.title')}
           </h1>
 
-          <div className="flex items-center gap-3">
+          {/* versão mobile: idiomas à esquerda, login/avatar à direita */}
+          <div className="flex items-center justify-between sm:hidden">
             <LanguageSwitcher />
-
             {user && !user.isAnonymous ? (
-              // Mini avatar + username → leva para o dashboard ao clicar
+              <button
+                onClick={() => nav('/dashboard')}
+                className="group flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700 text-slate-200 hover:bg-slate-800 transition"
+                title={t('common.dashboard')}
+              >
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold bg-gradient-to-br from-emerald-500 to-blue-500 text-white">
+                  {hostInitials}
+                </span>
+                <span className="truncate text-sm">{hostName}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setAuthStep('login')}
+                className="px-3 py-2 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200 hover:bg-slate-700 transition text-sm"
+              >
+                {t('home.modal.login')}
+              </button>
+            )}
+          </div>
+
+          {/* versão desktop: mesma linha normal */}
+          <div className="hidden sm:flex items-center gap-3">
+            <LanguageSwitcher />
+            {user && !user.isAnonymous ? (
               <button
                 onClick={() => nav('/dashboard')}
                 className="group flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700 text-slate-200 hover:bg-slate-800 transition max-w-[220px]"
@@ -151,122 +177,131 @@ export default function Home() {
           </div>
         </div>
 
-        <p className="mt-2 text-slate-300">
-          {t('home.subtitle')}
-        </p>
+          <p className="mt-2 text-slate-300 text-sm sm:text-base">{t('home.subtitle')}</p>
 
-        {/* Card principal */}
-        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm shadow-xl p-6 space-y-5">
-          {/* CTA principal: "Create quiz" sempre visível */}
-          <button
-            onClick={handleCreateQuizClick}
-            className="w-full px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-semibold hover:opacity-90 active:opacity-100 transition"
-          >
-            {t('home.ctaCreateQuiz')}
-          </button>
+          {/* Card principal */}
+          <div className="mt-5 sm:mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm shadow-xl p-4 sm:p-6 space-y-5">
+            {/* CTA principal */}
+            <button
+              onClick={handleCreateQuizClick}
+              className="w-full px-4 sm:px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-semibold hover:opacity-90 active:opacity-100 transition text-base sm:text-lg"
+            >
+              {t('home.ctaCreateQuiz')}
+            </button>
 
-          {/* Fluxo de auth progressivo */}
-          {authStep !== 'none' && (
-            <div className="pt-1">
-              {authStep === 'choose' && (
-                <div className="space-y-3">
-                  <h2 className="font-semibold text-slate-200">{t('home.modal.title')}</h2>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setAuthStep('login')}
-                      className="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition"
-                    >
-                      {t('home.modal.login')}
-                    </button>
-                    <button
-                      onClick={() => setAuthStep('register')}
-                      className="flex-1 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
-                    >
-                      {t('home.modal.register')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {(authStep === 'login' || authStep === 'register') && (
-                <div className="space-y-3">
-                  <h2 className="font-semibold text-slate-200">
-                    {authStep === 'login' ? t('home.modal.loginTitle') : t('home.modal.registerTitle')}
-                  </h2>
-                  <input
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder={t('home.host.username')!}
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                  <input
-                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder={t('home.host.password')!}
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setAuthStep('choose')}
-                      className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
-                    >
-                      {t('common.back')}
-                    </button>
-
-                    {authStep === 'login' ? (
+            {/* Fluxo de auth progressivo */}
+            {authStep !== 'none' && (
+              <div className="pt-1">
+                {authStep === 'choose' && (
+                  <div className="space-y-3">
+                    <h2 className="font-semibold text-slate-200 text-base sm:text-lg">
+                      {t('home.modal.title')}
+                    </h2>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <button
-                        onClick={handleLogin}
-                        disabled={loading}
-                        className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 transition"
+                        onClick={() => setAuthStep('login')}
+                        className="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition"
                       >
                         {t('home.modal.login')}
                       </button>
-                    ) : (
                       <button
-                        onClick={handleRegister}
-                        disabled={loading}
-                        className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-50 transition"
+                        onClick={() => setAuthStep('register')}
+                        className="flex-1 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
                       >
                         {t('home.modal.register')}
                       </button>
-                    )}
+                    </div>
                   </div>
+                )}
 
-                  <p className="text-xs text-slate-400">
-                    {t('home.usernameHint')}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                {(authStep === 'login' || authStep === 'register') && (
+                  <div className="space-y-3">
+                    <h2 className="font-semibold text-slate-200 text-base sm:text-lg">
+                      {authStep === 'login'
+                        ? t('home.modal.loginTitle')
+                        : t('home.modal.registerTitle')}
+                    </h2>
+                    <input
+                      className="w-full px-3 py-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder={t('home.host.username')!}
+                      inputMode="email"
+                      autoComplete="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <input
+                      className="w-full px-3 py-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder={t('home.host.password')!}
+                      type="password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
 
-        {/* Entrar como player */}
-        <div className="mt-6">
-          <label className="text-sm text-slate-300">{t('home.join.label')}</label>
-          <div className="flex gap-2 mt-2">
-            <input
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value)}
-              placeholder={t('home.join.placeholder')!}
-              className="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 placeholder:text-slate-500 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={() => joinCode && nav(`/play/${joinCode}`)}
-              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
-            >
-              {t('home.join.button')}
-            </button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button
+                        onClick={() => setAuthStep('choose')}
+                        className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
+                      >
+                        {t('common.back')}
+                      </button>
+
+                      {authStep === 'login' ? (
+                        <button
+                          onClick={handleLogin}
+                          disabled={loading}
+                          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 transition"
+                        >
+                          {t('home.modal.login')}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleRegister}
+                          disabled={loading}
+                          className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-50 transition"
+                        >
+                          {t('home.modal.register')}
+                        </button>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-slate-400">{t('home.usernameHint')}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
 
-        <p className="mt-4 text-xs text-amber-300/90 border border-amber-500/30 rounded-xl p-3 bg-amber-500/5">
-          ⚠️ {t('ttl.warning')}
-        </p>
+          {/* Entrar como player */}
+          <div className="mt-6">
+            <label className="text-sm sm:text-base text-slate-300">
+              {t('home.join.label')}
+            </label>
+            <div className="mt-2 flex flex-col xs:flex-row gap-2">
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+                placeholder={t('home.join.placeholder')!}
+                className="px-3 py-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 placeholder:text-slate-500 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                inputMode="text"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+              <button
+                onClick={() => joinCode && nav(`/play/${joinCode}`)}
+                className="px-4 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
+              >
+                {t('home.join.button')}
+              </button>
+            </div>
+          </div>
+
+          <p className="mt-4 text-xs sm:text-sm text-amber-300/90 border border-amber-500/30 rounded-xl p-3 bg-amber-500/5">
+            ⚠️ {t('ttl.warning')}
+          </p>
+        </div>
       </div>
-    </div>
     </>
   );
 }
