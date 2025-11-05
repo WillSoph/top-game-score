@@ -59,28 +59,39 @@ export default function QuestionEditor({
         />
 
         {opts.map((v, i) => (
-          <div key={i} className="flex gap-2 items-center">
-            <input
-              className="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-              placeholder={`${t('editor.placeholder.option')} ${i + 1}`}
-              value={v}
-              onChange={(e) => {
-                const clone = [...opts];
-                clone[i] = e.target.value;
-                setOpts(clone);
-              }}
-            />
-            <label className="text-xs flex items-center gap-1 text-slate-300">
-              <input
-                type="radio"
-                className="accent-emerald-500"
-                checked={i === correctIndex}
-                onChange={() => setCorrectIndex(i)}
-              />
-              {t('editor.correct')}
-            </label>
-          </div>
-        ))}
+            <div key={i} className="relative overflow-hidden rounded-lg">
+                {/* campo da opção com espaço para o radio à direita */}
+                <input
+                className="w-full px-3 py-2.5 pr-24 sm:pr-28 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                placeholder={`${t('create.questions.option')} ${i + 1}`}
+                value={v}
+                onChange={(e) => {
+                    const clone = [...opts];
+                    clone[i] = e.target.value;
+                    setOpts(clone);
+                }}
+                />
+
+                {/* radio “correta” ancorado à direita, sem quebrar layout */}
+                <label
+                className="absolute right-2 top-1/2 -translate-y-1/2
+                            inline-flex items-center gap-2 px-2 py-1
+                            bg-slate-900/70 backdrop-blur-sm
+                            border border-slate-700 rounded-md
+                            text-slate-300 text-xs sm:text-[13px] whitespace-nowrap
+                            shadow-sm"
+                >Correta
+                <input
+                    type="radio"
+                    className="accent-emerald-500 shrink-0"
+                    checked={i === correctIndex}
+                    onChange={() => setCorrectIndex(i)}
+                />
+                <span className="hidden sm:inline">{t('create.questions.correct')}</span>
+                </label>
+            </div>
+            ))}
+
 
         <button
           onClick={add}
