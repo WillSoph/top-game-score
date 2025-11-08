@@ -22,16 +22,39 @@
   "home.join.label": "Entrar con código del grupo",
   "home.join.placeholder": "código",
   "home.join.button": "Entrar",
+  "join.name": "Tu nombre",
+  "join.handle": "Tu usuario",
 
   "brand": "TopGameScore",
+
   "seo": {
-    "title": "Panel del Anfitrión",
-    "description": "Crea, gestiona y controla tus cuestionarios en vivo en tiempo real con TopGameScore — la forma inteligente de jugar y competir."
+    "appName": "TopGameScore — Plataforma de Quiz en Vivo",
+    "title": "Plataforma de Quiz en Vivo para Clases, Lives y Eventos | Quiz Multijugador en Tiempo Real",
+    "description": "Crea y presenta cuestionarios multijugador en tiempo real para clases, directos y eventos. Los jugadores entran por código, responden en el móvil y ven el ranking en vivo.",
+    "keywords": "quiz en vivo, quiz en tiempo real, quiz multijugador, juego de preguntas para clase, quiz para streaming, trivia en vivo, crear quiz online, jugar por código",
+    "h2": "Quiz en vivo • multijugador en tiempo real • entrada por código",
+    "features": {
+      "f1": { "t": "Plataforma de quiz en tiempo real", "d": "Baja latencia, puntuación instantánea y ranking en vivo." },
+      "f2": { "t": "Lista para clases y directos", "d": "Ideal para docentes, streamers y eventos—sin instalar nada." },
+      "f3": { "t": "Sencilla y práctica", "d": "Crea quizzes en segundos, invita por código y mantén el control." },
+      "f4": { "t": "Seguro y escalable", "d": "Ingreso anónimo de jugadores, cuentas de host y datos protegidos." }
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "q1": "¿Es realmente en tiempo real?",
+      "a1": "Sí. Los jugadores responden en el móvil y el ranking se actualiza al instante.",
+      "q2": "¿Los jugadores necesitan crear una cuenta?",
+      "a2": "No. Entran con el código del grupo—solo el anfitrión necesita cuenta.",
+      "q3": "¿Puedo usarlo en clase o en un directo?",
+      "a3": "Por supuesto. Comparte el código o el QR en tu pantalla y empieza el quiz."
+    }
   },
+
   "common": {
     "back": "Volver",
     "copied": "¡Copiado!"
   },
+
   "host": {
     "heading": "Anfitrión",
     "mustSignIn": "Inicia sesión como anfitrión para controlar el cuestionario.",
@@ -62,6 +85,7 @@
       "finish": "No se pudo finalizar el cuestionario. Verifica las reglas de Firestore."
     }
   },
+
   "create": {
     "title": "Configurar Quiz",
     "setupTitle": "Ajustes básicos",
@@ -96,6 +120,7 @@
       "questionIncomplete": "Completa la pregunta y todas las opciones antes de agregar."
     }
   },
+
   "editor": {
     "title": "Preguntas",
     "subtitle": "{{count}} pregunta(s) agregada(s)",

@@ -22,16 +22,39 @@
   "home.join.label": "Entrar com código do grupo",
   "home.join.placeholder": "código",
   "home.join.button": "Entrar",
+  "join.name": "Seu nome",
+  "join.handle": "Seu @usuario",
 
   "brand": "TopGameScore",
+
   "seo": {
-    "title": "Painel do Host",
-    "description": "Crie, gerencie e controle seus quizzes em tempo real com o TopGameScore — a forma inteligente de jogar e competir."
+    "appName": "TopGameScore — Plataforma de Quiz ao Vivo",
+    "title": "Plataforma de Quiz ao Vivo para Aulas, Lives e Eventos | Quiz Multijogador em Tempo Real",
+    "description": "Crie e apresente quizzes multijogador em tempo real para aulas, lives e eventos. Os participantes entram por código, respondem no celular e veem o ranking ao vivo.",
+    "keywords": "quiz ao vivo, quiz em tempo real, quiz multijogador, jogo de perguntas para sala de aula, quiz para live, quiz online simples, trivia ao vivo, criar quiz online, jogar por código",
+    "h2": "Quiz ao vivo • multijogador em tempo real • entrada por código",
+    "features": {
+      "f1": { "t": "Plataforma de quiz em tempo real", "d": "Jogo com baixa latência, pontuação instantânea e ranking ao vivo." },
+      "f2": { "t": "Para aulas e lives", "d": "Perfeito para professores, criadores e eventos—sem instalar nada." },
+      "f3": { "t": "Simples e prático", "d": "Crie quizzes em segundos, convide por código e mantenha o controle." },
+      "f4": { "t": "Seguro e escalável", "d": "Entrada anônima de jogadores, contas de host e dados protegidos." }
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "q1": "É realmente em tempo real?",
+      "a1": "Sim. Os jogadores respondem no celular e o ranking atualiza instantaneamente.",
+      "q2": "Os jogadores precisam criar conta?",
+      "a2": "Não. Eles entram com o código do grupo—apenas o host precisa de conta.",
+      "q3": "Posso usar em sala de aula ou live?",
+      "a3": "Claro. Compartilhe o código ou o QR na tela e comece o quiz."
+    }
   },
+
   "common": {
     "back": "Voltar",
     "copied": "Copiado!"
   },
+
   "host": {
     "heading": "Host",
     "mustSignIn": "Faça login como host para controlar o quiz.",
@@ -97,6 +120,7 @@
       "questionIncomplete": "Preencha a pergunta e todas as opções antes de adicionar."
     }
   },
+
   "editor": {
     "title": "Perguntas",
     "subtitle": "{{count}} pergunta(s) adicionada(s)",

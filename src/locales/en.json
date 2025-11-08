@@ -23,17 +23,38 @@
   "home.join.placeholder": "code",
   "home.join.button": "Join",
   "join.name": "Your name",
-  "join.handle": "Your handle",  
+  "join.handle": "Your handle",
 
   "brand": "TopGameScore",
+
   "seo": {
-    "title": "Host Panel",
-    "description": "Create, manage and control your live quizzes in real time with TopGameScore — the smart way to play and compete."
+    "appName": "TopGameScore — Live Quiz Platform",
+    "title": "Live Quiz Platform for Streams, Classes and Events | Real-time Multiplayer Quizzes",
+    "description": "Create and host real-time multiplayer quizzes for classes, streams and events. Players join by code, answer on mobile, and see a live leaderboard.",
+    "keywords": "live quiz, real-time quiz, multiplayer quiz, quiz game for classroom, quiz for livestream, simple quiz, trivia live, host quizzes online, play by code",
+    "h2": "Live quiz game • real-time multiplayer • mobile join by code",
+    "features": {
+      "f1": { "t": "Real-time quiz platform", "d": "Latency-friendly gameplay, instant scoring and live leaderboard." },
+      "f2": { "t": "Classroom & livestream ready", "d": "Perfect for teachers, YouTubers, and events—no installs required." },
+      "f3": { "t": "Simple & practical", "d": "Create quizzes in seconds, invite with a code, and keep full control." },
+      "f4": { "t": "Secure & scalable", "d": "Anonymous player join, host accounts and safe data handling." }
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": "Is it really real-time?",
+      "a1": "Yes. Players answer on their phones and the leaderboard updates instantly for everyone.",
+      "q2": "Do players need to create an account?",
+      "a2": "No. Players join with the group code—only the host needs an account.",
+      "q3": "Can I use it in class or on a livestream?",
+      "a3": "Absolutely. Share the code or QR on your screen and start the quiz."
+    }
   },
+
   "common": {
     "back": "Back",
     "copied": "Copied!"
   },
+
   "host": {
     "heading": "Host",
     "mustSignIn": "Please sign in as host to control the quiz.",
@@ -64,6 +85,7 @@
       "finish": "Failed to finish quiz. Check Firestore rules."
     }
   },
+
   "create": {
     "title": "Setup Quiz",
     "setupTitle": "Basic settings",
@@ -98,6 +120,7 @@
       "questionIncomplete": "Fill in the question and all options before adding."
     }
   },
+
   "editor": {
     "title": "Questions",
     "subtitle": "{{count}} question(s) added",

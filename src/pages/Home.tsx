@@ -10,6 +10,7 @@ import { auth } from '../lib/firebase';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
+import { LogIn } from 'lucide-react';
 
 type AuthStep = 'none' | 'choose' | 'login' | 'register';
 
@@ -71,7 +72,6 @@ export default function Home() {
     }
   }
 
-  // Helpers para o avatar
   const hostName =
     user?.displayName ||
     (user?.email ? user.email.split('@')[0] : '') ||
@@ -86,102 +86,188 @@ export default function Home() {
         .join('')
     : 'H';
 
+  const siteUrl = import.meta.env.VITE_SITE_URL;
+
+  // JSON-LD (WebSite + SoftwareApplication + FAQPage)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        name: 'TopGameScore',
+        url: siteUrl,
+        inLanguage: i18n.language || 'en',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${siteUrl}/?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: t('seo.appName'),
+        applicationCategory: 'EducationalApplication',
+        operatingSystem: 'Web',
+        url: siteUrl,
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, // free (pode ajustar)
+        description: t('seo.description'),
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: t('seo.faq.q1'),
+            acceptedAnswer: { '@type': 'Answer', text: t('seo.faq.a1') },
+          },
+          {
+            '@type': 'Question',
+            name: t('seo.faq.q2'),
+            acceptedAnswer: { '@type': 'Answer', text: t('seo.faq.a2') },
+          },
+          {
+            '@type': 'Question',
+            name: t('seo.faq.q3'),
+            acceptedAnswer: { '@type': 'Answer', text: t('seo.faq.a3') },
+          },
+        ],
+      },
+    ],
+  };
+
+  // hreflang alternates (URLs com ?lng=)
+  const alternates = [
+    { lang: 'x-default', href: `${siteUrl}` },
+    { lang: 'en', href: `${siteUrl}?lng=en` },
+    { lang: 'pt', href: `${siteUrl}?lng=pt` },
+    { lang: 'es', href: `${siteUrl}?lng=es` },
+  ];
+
   return (
     <>
       <Helmet>
         <html lang={i18n.language || 'en'} />
         <title>{t('seo.title')}</title>
         <meta name="description" content={t('seo.description')} />
+        {/* Meta keywords não ranqueiam sozinhas, mas não atrapalham */}
         <meta name="keywords" content={t('seo.keywords')} />
-        <link rel="canonical" href={import.meta.env.VITE_SITE_URL} />
+        <link rel="canonical" href={siteUrl} />
+        {alternates.map((a) => (
+          <link key={a.lang} rel="alternate" hrefLang={a.lang} href={a.href} />
+        ))}
 
         {/* Open Graph */}
         <meta property="og:site_name" content="TopGameScore" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={import.meta.env.VITE_SITE_URL} />
+        <meta property="og:url" content={siteUrl} />
         <meta property="og:title" content={t('seo.title')} />
         <meta property="og:description" content={t('seo.description')} />
-        <meta property="og:image" content={`${import.meta.env.VITE_SITE_URL}/og.png`} />
+        <meta property="og:image" content={`${siteUrl}/og.png`} />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={t('seo.title')} />
         <meta name="twitter:description" content={t('seo.description')} />
-        <meta name="twitter:image" content={`${import.meta.env.VITE_SITE_URL}/og.png`} />
+        <meta name="twitter:image" content={`${siteUrl}/og.png`} />
 
         {/* Favicons */}
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#0B1220" />
+
+        {/* JSON-LD */}
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      {/* BG com gradientes suaves; padding seguro para mobile topo/rodapé */}
+      {/* BG */}
       <div className="min-h-screen pb-safe pt-safe bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
-        {/* container responsivo */}
         <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 md:px-8 py-5 sm:py-6 md:py-8">
           {/* Top bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-            {t('app.title')}
-          </h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+              {t('app.title')}
+            </h1>
 
-          {/* versão mobile: idiomas à esquerda, login/avatar à direita */}
-          <div className="flex items-center justify-between sm:hidden">
-            <LanguageSwitcher />
-            {user && !user.isAnonymous ? (
-              <button
-                onClick={() => nav('/dashboard')}
-                className="group flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700 text-slate-200 hover:bg-slate-800 transition"
-                title={t('common.dashboard')}
-              >
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold bg-gradient-to-br from-emerald-500 to-blue-500 text-white">
-                  {hostInitials}
-                </span>
-                <span className="truncate text-sm">{hostName}</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setAuthStep('login')}
-                className="px-3 py-2 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200 hover:bg-slate-700 transition text-sm"
-              >
-                {t('home.modal.login')}
-              </button>
-            )}
+            {/* mobile */}
+            <div className="flex items-center justify-between sm:hidden">
+              <LanguageSwitcher />
+              {user && !user.isAnonymous ? (
+                <button
+                  onClick={() => nav('/dashboard')}
+                  className="group flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700 text-slate-200 hover:bg-slate-800 transition"
+                  title={t('common.dashboard')}
+                >
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold bg-gradient-to-br from-emerald-500 to-blue-500 text-white">
+                    {hostInitials}
+                  </span>
+                  <span className="truncate text-sm">{hostName}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setAuthStep('login')}
+                  className="px-3 py-2 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200 hover:bg-slate-700 transition text-sm"
+                >
+                  {t('home.modal.login')}
+                </button>
+              )}
+            </div>
+
+            {/* desktop */}
+            <div className="hidden sm:flex items-center gap-3">
+              <LanguageSwitcher />
+              {user && !user.isAnonymous ? (
+                <button
+                  onClick={() => nav('/dashboard')}
+                  className="group flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700 text-slate-200 hover:bg-slate-800 transition max-w-[220px]"
+                  title={t('common.dashboard')}
+                >
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold bg-gradient-to-br from-emerald-500 to-blue-500 text-white">
+                    {hostInitials}
+                  </span>
+                  <span className="truncate text-sm">
+                    {hostName} <span className="text-slate-400">· {t('common.dashboard')}</span>
+                  </span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setAuthStep('login')}
+                  className="px-4 py-2 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200 hover:bg-slate-700 transition"
+                >
+                  {t('home.modal.login')}
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* versão desktop: mesma linha normal */}
-          <div className="hidden sm:flex items-center gap-3">
-            <LanguageSwitcher />
-            {user && !user.isAnonymous ? (
-              <button
-                onClick={() => nav('/dashboard')}
-                className="group flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700 text-slate-200 hover:bg-slate-800 transition max-w-[220px]"
-                title={t('common.dashboard')}
-              >
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold bg-gradient-to-br from-emerald-500 to-blue-500 text-white">
-                  {hostInitials}
-                </span>
-                <span className="truncate text-sm">
-                  {hostName} <span className="text-slate-400">· {t('common.dashboard')}</span>
-                </span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setAuthStep('login')}
-                className="px-4 py-2 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200 hover:bg-slate-700 transition"
-              >
-                {t('home.modal.login')}
-              </button>
-            )}
-          </div>
-        </div>
-
+          {/* H2 com termos fortes */}
+          <h2 className="mt-3 text-lg sm:text-xl font-semibold text-slate-100">
+            {t('seo.h2')}
+          </h2>
           <p className="mt-2 text-slate-300 text-sm sm:text-base">{t('home.subtitle')}</p>
 
+          {/* Features com palavras-chave (visíveis) */}
+          <section aria-labelledby="features" className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <h3 className="font-semibold mb-1">{t('seo.features.f1.t')}</h3>
+              <p className="text-sm text-slate-300">{t('seo.features.f1.d')}</p>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <h3 className="font-semibold mb-1">{t('seo.features.f2.t')}</h3>
+              <p className="text-sm text-slate-300">{t('seo.features.f2.d')}</p>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <h3 className="font-semibold mb-1">{t('seo.features.f3.t')}</h3>
+              <p className="text-sm text-slate-300">{t('seo.features.f3.d')}</p>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <h3 className="font-semibold mb-1">{t('seo.features.f4.t')}</h3>
+              <p className="text-sm text-slate-300">{t('seo.features.f4.d')}</p>
+            </div>
+          </section>
+
           {/* Card principal */}
-          <div className="mt-5 sm:mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm shadow-xl p-4 sm:p-6 space-y-5">
-            {/* CTA principal */}
+          <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm shadow-xl p-4 sm:p-6 space-y-5">
             <button
               onClick={handleCreateQuizClick}
               className="w-full px-4 sm:px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-semibold hover:opacity-90 active:opacity-100 transition text-base sm:text-lg"
@@ -189,7 +275,6 @@ export default function Home() {
               {t('home.ctaCreateQuiz')}
             </button>
 
-            {/* Fluxo de auth progressivo */}
             {authStep !== 'none' && (
               <div className="pt-1">
                 {authStep === 'choose' && (
@@ -243,7 +328,7 @@ export default function Home() {
                         onClick={() => setAuthStep('choose')}
                         className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
                       >
-                        {t('common.back')}
+                        ← {t('common.back')}
                       </button>
 
                       {authStep === 'login' ? (
@@ -290,12 +375,40 @@ export default function Home() {
               />
               <button
                 onClick={() => joinCode && nav(`/play/${joinCode}`)}
-                className="px-4 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
+                disabled={!joinCode}
+                aria-label={t('home.join.button')}
+                className="group inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold
+                          text-slate-900 transition
+                          bg-gradient-to-r from-emerald-400 via-lime-400 to-emerald-500
+                          hover:from-emerald-300 hover:via-lime-300 hover:to-emerald-400
+                          shadow-[0_0_0_1px_rgba(16,185,129,.55),0_10px_30px_-10px_rgba(163,230,53,.65)]
+                          focus:outline-none focus:ring-2 focus:ring-emerald-400/60
+                          disabled:opacity-60 disabled:cursor-not-allowed"
               >
+                <LogIn className="h-5 w-5 opacity-90 transition group-hover:translate-x-0.5" />
                 {t('home.join.button')}
               </button>
             </div>
           </div>
+
+          {/* FAQ visível (casa com JSON-LD) */}
+          <section className="mt-8">
+            <h2 className="text-xl font-semibold text-slate-100 mb-3">{t('seo.faq.title')}</h2>
+            <div className="space-y-3">
+              <details className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+                <summary className="font-medium cursor-pointer">{t('seo.faq.q1')}</summary>
+                <p className="mt-2 text-sm text-slate-300">{t('seo.faq.a1')}</p>
+              </details>
+              <details className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+                <summary className="font-medium cursor-pointer">{t('seo.faq.q2')}</summary>
+                <p className="mt-2 text-sm text-slate-300">{t('seo.faq.a2')}</p>
+              </details>
+              <details className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+                <summary className="font-medium cursor-pointer">{t('seo.faq.q3')}</summary>
+                <p className="mt-2 text-sm text-slate-300">{t('seo.faq.a3')}</p>
+              </details>
+            </div>
+          </section>
 
           <p className="mt-4 text-xs sm:text-sm text-amber-300/90 border border-amber-500/30 rounded-xl p-3 bg-amber-500/5">
             ⚠️ {t('ttl.warning')}

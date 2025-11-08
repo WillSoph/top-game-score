@@ -191,7 +191,7 @@ export default function CreateQuizPage() {
                                 border border-slate-700 rounded-md
                                 text-slate-300 text-xs sm:text-[13px] whitespace-nowrap
                                 shadow-sm"
-                    >Correta
+                    >
                       <input
                         type="radio"
                         className="accent-emerald-500 shrink-0"
