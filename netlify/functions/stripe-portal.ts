@@ -1,6 +1,6 @@
 import type { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
-import { adminAuth, adminDb } from '../../lib/firebaseAdmin';
+import { adminAuth, adminDb } from './lib/firebaseAdmin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
