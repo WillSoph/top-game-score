@@ -22,7 +22,7 @@ export async function createCheckoutSession(opts: {
   locale?: string;
   idToken: string;
 }): Promise<{ url: string }> {
-  return callFn<{ url: string }>('checkout.create', { plan: opts.plan, locale: opts.locale }, opts.idToken);
+  return callFn<{ url: string }>('checkout-create', { plan: opts.plan, locale: opts.locale }, opts.idToken);
 }
 
 export async function createBillingPortal(opts: {
@@ -30,7 +30,7 @@ export async function createBillingPortal(opts: {
   returnUrl?: string;
 }): Promise<{ url: string }> {
   return callFn<{ url: string }>(
-    'portal.create',
+    'portal-create',
     { returnUrl: opts.returnUrl },
     opts.idToken
   );
