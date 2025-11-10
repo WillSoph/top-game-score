@@ -1,13 +1,21 @@
 import Stripe from 'stripe';
-import { adminAuth, adminDb } from './firebaseAdmin';
+import { adminAuth, adminDb } from '../../lib/firebaseAdmin';
 
-/**
- * Redireciona o usuário logado para o portal de gerenciamento de assinatura (Stripe Customer Portal)
- * Usado quando o usuário já é Pro e quer alterar ou cancelar o plano.
- */
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export const handler = async (event: any) => {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': process.env.SITE_URL || '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      },
+      body: '',
+    };
+  }
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method not allowed' };
   }
@@ -15,14 +23,11 @@ export const handler = async (event: any) => {
   try {
     const authHeader = event.headers.authorization || '';
     const idToken = authHeader.replace('Bearer ', '');
-    if (!idToken)
-      return { statusCode: 401, body: JSON.stringify({ error: 'Missing Authorization' }) };
+    if (!idToken) return { statusCode: 401, body: JSON.stringify({ error: 'Missing Authorization' }) };
 
-    // Verifica token Firebase
     const decoded = await adminAuth.verifyIdToken(idToken);
     const uid = decoded.uid;
 
-    // Busca o customerId no Firestore (salvo no checkout-create)
     const userRef = adminDb.collection('users').doc(uid);
     const userSnap = await userRef.get();
     const customerId = userSnap.get('stripeCustomerId');
@@ -31,7 +36,6 @@ export const handler = async (event: any) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'Customer not found' }) };
     }
 
-    // Cria sessão do portal
     const body = event.body ? JSON.parse(event.body) : {};
     const returnUrl = body.returnUrl || process.env.SITE_URL;
 
@@ -42,7 +46,10 @@ export const handler = async (event: any) => {
 
     return {
       statusCode: 200,
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'Access-Control-Allow-Origin': process.env.SITE_URL || '*',
+      },
       body: JSON.stringify({ url: session.url }),
     };
   } catch (err) {
