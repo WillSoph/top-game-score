@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   addDoc,
@@ -13,11 +13,21 @@ import { auth, db } from '../lib/firebase';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 
+// ⬇️ Se você já criou o hook de plano e o botão de upgrade, use-os:
+import { useUserPlan } from '../hooks/useUserPlan';
+// import { UpgradeButton } from '../components/billing/UpgradeButton';
+
 type Lang = 'en' | 'pt' | 'es';
+
+const FREE_QUESTION_LIMIT = 10; // ajuste aqui o limite do plano free
 
 export default function CreateQuizPage() {
   const { t } = useTranslation();
   const nav = useNavigate();
+
+  const { plan, active } = useUserPlan(); // 'free' | 'pro'
+  const isPro = plan === 'pro' && active;
+  const limit = FREE_QUESTION_LIMIT;
 
   const [title, setTitle] = useState('Quiz');
   const [maxTimeSec, setMaxTimeSec] = useState(20);
@@ -31,6 +41,13 @@ export default function CreateQuizPage() {
     { text: string; options: string[]; correctIndex: number }[]
   >([]);
 
+  // contagem e restante (para UI)
+  const qCount = questions.length;
+  const remaining = useMemo(
+    () => (isPro ? Infinity : Math.max(0, limit - qCount)),
+    [isPro, limit, qCount]
+  );
+
   useEffect(() => {
     if (!auth.currentUser) nav('/');
   }, [nav]);
@@ -38,6 +55,17 @@ export default function CreateQuizPage() {
   function addLocalQuestion() {
     if (!text.trim() || opts.some((o) => !o.trim())) {
       alert(t('create.validation.questionIncomplete'));
+      return;
+    }
+    // bloqueio client-side para plano free
+    if (!isPro && qCount >= limit) {
+      alert(
+        t('create.limit.freeReached', {
+          defaultValue:
+            'You reached the free plan limit of {{limit}} questions. Upgrade to add more.',
+          limit,
+        })
+      );
       return;
     }
     setQuestions((prev) => [...prev, { text: text.trim(), options: [...opts], correctIndex }]);
@@ -55,10 +83,27 @@ export default function CreateQuizPage() {
       alert(t('create.toast.signInRequired'));
       return;
     }
+    // defesa extra no create (client-side): não permitir criar grupo acima do limite no free
+    if (!isPro && qCount > limit) {
+      alert(
+        t('create.limit.freeReached', {
+          defaultValue:
+            'You reached the free plan limit of {{limit}} questions. Upgrade to add more.',
+          limit,
+        })
+      );
+      return;
+    }
+
     const hostUid = auth.currentUser.uid;
     const now = Timestamp.now();
-    const expiresAt = Timestamp.fromMillis(now.toMillis() + 7 * 24 * 60 * 60 * 1000);
 
+    // Plano free: expira em 7 dias; Pro: sem expiração (null)
+    const expiresAt = isPro
+      ? null
+      : Timestamp.fromMillis(now.toMillis() + 7 * 24 * 60 * 60 * 1000);
+
+    // Criação do grupo
     const ref = await addDoc(collection(db, 'groups'), {
       hostUid,
       code: '',
@@ -67,15 +112,18 @@ export default function CreateQuizPage() {
       expiresAt,
       status: 'draft',
       currentQuestionIndex: -1,
-      questionCount: questions.length,
+      questionCount: qCount,
       roundStartedAt: null,
       maxTimeSec: Number(maxTimeSec) || 20,
       locale: language,
+      plan: isPro ? 'pro' : 'free', // opcional: salva o plano vigente no momento da criação
     });
 
+    // código = id do grupo
     await setDoc(ref, { code: ref.id }, { merge: true });
 
-    if (questions.length > 0) {
+    // Perguntas em batch
+    if (qCount > 0) {
       const batch = writeBatch(db);
       questions.forEach((q, index) => {
         const qRef = doc(collection(db, 'groups', ref.id, 'questions'));
@@ -98,7 +146,41 @@ export default function CreateQuizPage() {
           >
             ← {t('common.back')}
           </button>
+
           <div className="flex items-center gap-3 self-start sm:self-auto">
+            {/* Badge de plano */}
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
+                isPro
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-800 border border-slate-700 text-slate-200'
+              }`}
+              title={
+                isPro
+                  ? t('create.limit.badge.pro', { defaultValue: 'Pro — unlimited questions' })
+                  : t('create.limit.badge.free', {
+                      defaultValue: 'Free — up to {{limit}} questions',
+                      limit,
+                    })
+              }
+            >
+              {isPro
+                ? t('create.limit.badge.pro', { defaultValue: 'Pro' })
+                : t('create.limit.badge.free', { defaultValue: 'Free' })}
+            </span>
+
+            {/* CTA Upgrade — mostre apenas se for free */}
+            {!isPro && (
+              // Descomente se já tiver o componente
+              // <UpgradeButton />
+              <button
+                onClick={() => (window.location.href = '/pricing')}
+                className="px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-blue-500 text-white text-sm font-semibold hover:opacity-90 transition"
+              >
+                {t('create.limit.upgradeCta', { defaultValue: 'Upgrade' })}
+              </button>
+            )}
+
             <LanguageSwitcher />
           </div>
         </div>
@@ -108,6 +190,15 @@ export default function CreateQuizPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
             {t('create.title')}
           </h1>
+          {/* Linha de status do limite (apenas no free) */}
+          {!isPro && (
+            <p className="mt-2 text-sm text-slate-300">
+              {t('create.limit.freeCounter', {
+                defaultValue: 'You can still add {{remaining}} question(s) on the free plan.',
+                remaining,
+              })}
+            </p>
+          )}
         </div>
 
         {/* Card principal */}
@@ -170,43 +261,48 @@ export default function CreateQuizPage() {
               />
 
               {opts.map((v, i) => (
-                  <div key={i} className="relative overflow-hidden rounded-lg">
-                    {/* campo da opção com espaço para o radio à direita */}
+                <div key={i} className="relative overflow-hidden rounded-lg">
+                  <input
+                    className="w-full px-3 py-2.5 pr-24 sm:pr-28 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                    placeholder={`${t('create.questions.option')} ${i + 1}`}
+                    value={v}
+                    onChange={(e) => {
+                      const clone = [...opts];
+                      clone[i] = e.target.value;
+                      setOpts(clone);
+                    }}
+                  />
+                  <label
+                    className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-2 py-1 bg-slate-900/70 backdrop-blur-sm border border-slate-700 rounded-md text-slate-300 text-xs sm:text-[13px] whitespace-nowrap shadow-sm"
+                  >
                     <input
-                      className="w-full px-3 py-2.5 pr-24 sm:pr-28 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                      placeholder={`${t('create.questions.option')} ${i + 1}`}
-                      value={v}
-                      onChange={(e) => {
-                        const clone = [...opts];
-                        clone[i] = e.target.value;
-                        setOpts(clone);
-                      }}
+                      type="radio"
+                      className="accent-emerald-500 shrink-0"
+                      checked={i === correctIndex}
+                      onChange={() => setCorrectIndex(i)}
                     />
-
-                    {/* radio “correta” ancorado à direita, sem quebrar layout */}
-                    <label
-                      className="absolute right-2 top-1/2 -translate-y-1/2
-                                inline-flex items-center gap-2 px-2 py-1
-                                bg-slate-900/70 backdrop-blur-sm
-                                border border-slate-700 rounded-md
-                                text-slate-300 text-xs sm:text-[13px] whitespace-nowrap
-                                shadow-sm"
-                    >
-                      <input
-                        type="radio"
-                        className="accent-emerald-500 shrink-0"
-                        checked={i === correctIndex}
-                        onChange={() => setCorrectIndex(i)}
-                      />
-                      <span className="hidden sm:inline">{t('create.questions.correct')}</span>
-                    </label>
-                  </div>
-                ))}
-
+                    <span className="hidden sm:inline">{t('create.questions.correct')}</span>
+                  </label>
+                </div>
+              ))}
 
               <button
                 onClick={addLocalQuestion}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition"
+                disabled={!isPro && qCount >= limit}
+                className={`w-full sm:w-auto px-4 py-2.5 rounded-lg font-medium transition
+                  ${
+                    !isPro && qCount >= limit
+                      ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                  }`}
+                title={
+                  !isPro && qCount >= limit
+                    ? t('create.limit.freeReached', {
+                        defaultValue: 'You reached the free plan limit of {{limit}} questions.',
+                        limit,
+                      })
+                    : undefined
+                }
               >
                 {t('create.questions.add')}
               </button>
@@ -258,7 +354,13 @@ export default function CreateQuizPage() {
           {/* Footer */}
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
             <p className="text-xs text-amber-300/90 border border-amber-500/30 rounded-xl px-3 py-2 bg-amber-500/5">
-              ⚠️ {t('create.ttl')}
+              {/* TTL muda conforme plano */}
+              {isPro
+                ? t('create.ttl.pro', {
+                    defaultValue:
+                      'Pro plan: your data will be kept without auto-deletion.',
+                  })
+                : `⚠️ ${t('create.ttl')}`}
             </p>
             <button
               onClick={createGroup}

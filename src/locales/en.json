@@ -26,27 +26,26 @@
   "join.handle": "Your handle",
 
   "brand": "TopGameScore",
-
   "seo": {
-    "appName": "TopGameScore — Live Quiz Platform",
-    "title": "Live Quiz Platform for Streams, Classes and Events | Real-time Multiplayer Quizzes",
-    "description": "Create and host real-time multiplayer quizzes for classes, streams and events. Players join by code, answer on mobile, and see a live leaderboard.",
-    "keywords": "live quiz, real-time quiz, multiplayer quiz, quiz game for classroom, quiz for livestream, simple quiz, trivia live, host quizzes online, play by code",
-    "h2": "Live quiz game • real-time multiplayer • mobile join by code",
+    "title": "Host Panel",
+    "description": "Create, manage and control your live quizzes in real time with TopGameScore — the smart way to play and compete.",
+    "keywords": "live quiz, multiplayer quiz, trivia app, real-time quiz, host quizzes online, classroom quiz tool, audience engagement",
+    "appName": "TopGameScore",
+    "h2": "Live quiz platform for streamers, teachers and teams",
     "features": {
-      "f1": { "t": "Real-time quiz platform", "d": "Latency-friendly gameplay, instant scoring and live leaderboard." },
-      "f2": { "t": "Classroom & livestream ready", "d": "Perfect for teachers, YouTubers, and events—no installs required." },
-      "f3": { "t": "Simple & practical", "d": "Create quizzes in seconds, invite with a code, and keep full control." },
-      "f4": { "t": "Secure & scalable", "d": "Anonymous player join, host accounts and safe data handling." }
+      "f1": { "t": "Real-time hosting", "d": "Start, pause and finish rounds with a single click. Players join with a short code." },
+      "f2": { "t": "Multilingual interface", "d": "English, Portuguese and Spanish supported out of the box." },
+      "f3": { "t": "Smart scoring", "d": "Auto-score answers and show leaderboards instantly." },
+      "f4": { "t": "Share & replay", "d": "Keep your results or auto-expire on the free plan." }
     },
     "faq": {
-      "title": "FAQ",
-      "q1": "Is it really real-time?",
-      "a1": "Yes. Players answer on their phones and the leaderboard updates instantly for everyone.",
-      "q2": "Do players need to create an account?",
-      "a2": "No. Players join with the group code—only the host needs an account.",
-      "q3": "Can I use it in class or on a livestream?",
-      "a3": "Absolutely. Share the code or QR on your screen and start the quiz."
+      "title": "Frequently asked questions",
+      "q1": "How do players join a quiz?",
+      "a1": "The host shares a group code. Players open the site, enter the code and they're in.",
+      "q2": "Is there a limit to questions?",
+      "a2": "Yes, the free plan has a limit. The Pro plan offers unlimited questions and data retention.",
+      "q3": "Which languages are supported?",
+      "a3": "English, Portuguese and Spanish."
     }
   },
 
@@ -69,9 +68,7 @@
     },
     "questionsCount": "{{count}} question",
     "questionsCount_plural": "{{count}} questions",
-    "editor": {
-      "title": "Questions"
-    },
+    "editor": { "title": "Questions" },
     "controls": {
       "title": "Controls",
       "start": "START QUIZ",
@@ -96,11 +93,7 @@
       "maxTimeHint": "Allowed range: 5–300 seconds.",
       "language": "Language"
     },
-    "lang": {
-      "en": "English",
-      "pt": "Portuguese",
-      "es": "Spanish"
-    },
+    "lang": { "en": "English", "pt": "Portuguese", "es": "Spanish" },
     "questions": {
       "title": "Questions",
       "placeholderQuestion": "Question",
@@ -109,30 +102,60 @@
       "add": "Add question",
       "remove": "remove"
     },
-    "cta": {
-      "createGroup": "Create group"
-    },
+    "cta": { "createGroup": "Create group" },
     "ttl": "This group and its data will be automatically deleted in 7 days.",
-    "toast": {
-      "signInRequired": "Please sign in as host."
-    },
-    "validation": {
-      "questionIncomplete": "Fill in the question and all options before adding."
+    "ttl.pro": "Pro plan: your data will be kept without auto-deletion.",
+    "toast": { "signInRequired": "Please sign in as host." },
+    "validation": { "questionIncomplete": "Fill in the question and all options before adding." },
+
+    "limit": {
+      "badge": { "pro": "Pro — unlimited questions", "free": "Free — up to {{limit}} questions" },
+      "upgradeCta": "Upgrade",
+      "freeCounter": "You can still add {{remaining}} question(s) on the free plan.",
+      "freeReached": "You reached the free plan limit of {{limit}} questions. Upgrade to add more."
     }
   },
 
   "editor": {
     "title": "Questions",
     "subtitle": "{{count}} question(s) added",
-    "placeholder": {
-      "question": "Enter your question",
-      "option": "Option"
-    },
+    "placeholder": { "question": "Enter your question", "option": "Option" },
     "correct": "correct",
     "addQuestion": "Add Question",
     "remove": "remove",
-    "validation": {
-      "incomplete": "Please fill out all fields before adding."
-    }
+    "validation": { "incomplete": "Please fill out all fields before adding." }
+  },
+
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Start free. Upgrade any time.",
+    "billingToggle": { "monthly": "Monthly", "annual": "Annual (save 2 months)" },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "priceMonthly": "$0",
+        "priceAnnual": "$0",
+        "cta": "Start free",
+        "features": [
+          "Up to {{limit}} questions per quiz",
+          "Data auto-deleted after 7 days",
+          "Join via code",
+          "Multilingual interface"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "priceMonthly": "US$6.90",
+        "priceAnnual": "US$59",
+        "cta": "Go Pro",
+        "features": [
+          "Unlimited questions",
+          "Data kept without auto-deletion",
+          "Priority support",
+          "Future features included"
+        ]
+      }
+    },
+    "footnote": "Prices in USD. Taxes may apply."
   }
 }

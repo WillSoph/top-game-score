@@ -22,31 +22,28 @@
   "home.join.label": "Entrar con código del grupo",
   "home.join.placeholder": "código",
   "home.join.button": "Entrar",
-  "join.name": "Tu nombre",
-  "join.handle": "Tu usuario",
 
   "brand": "TopGameScore",
-
   "seo": {
-    "appName": "TopGameScore — Plataforma de Quiz en Vivo",
-    "title": "Plataforma de Quiz en Vivo para Clases, Lives y Eventos | Quiz Multijugador en Tiempo Real",
-    "description": "Crea y presenta cuestionarios multijugador en tiempo real para clases, directos y eventos. Los jugadores entran por código, responden en el móvil y ven el ranking en vivo.",
-    "keywords": "quiz en vivo, quiz en tiempo real, quiz multijugador, juego de preguntas para clase, quiz para streaming, trivia en vivo, crear quiz online, jugar por código",
-    "h2": "Quiz en vivo • multijugador en tiempo real • entrada por código",
+    "title": "Panel del Anfitrión",
+    "description": "Crea, gestiona y controla tus cuestionarios en vivo en tiempo real con TopGameScore — la forma inteligente de jugar y competir.",
+    "keywords": "quiz en vivo, trivia, cuestionarios en tiempo real, anfitrión online, herramienta para clases, interacción con audiencia",
+    "appName": "TopGameScore",
+    "h2": "Plataforma de quiz en vivo para streamers, docentes y equipos",
     "features": {
-      "f1": { "t": "Plataforma de quiz en tiempo real", "d": "Baja latencia, puntuación instantánea y ranking en vivo." },
-      "f2": { "t": "Lista para clases y directos", "d": "Ideal para docentes, streamers y eventos—sin instalar nada." },
-      "f3": { "t": "Sencilla y práctica", "d": "Crea quizzes en segundos, invita por código y mantén el control." },
-      "f4": { "t": "Seguro y escalable", "d": "Ingreso anónimo de jugadores, cuentas de host y datos protegidos." }
+      "f1": { "t": "Hosting en tiempo real", "d": "Inicia, pausa y finaliza rondas con un clic. Jugadores entran con un código corto." },
+      "f2": { "t": "Interfaz multilingüe", "d": "Inglés, portugués y español listos para usar." },
+      "f3": { "t": "Puntuación inteligente", "d": "Calificación automática y ranking instantáneo." },
+      "f4": { "t": "Compartir y repetir", "d": "Conserva tus resultados o autodestruye en el plan gratuito." }
     },
     "faq": {
       "title": "Preguntas frecuentes",
-      "q1": "¿Es realmente en tiempo real?",
-      "a1": "Sí. Los jugadores responden en el móvil y el ranking se actualiza al instante.",
-      "q2": "¿Los jugadores necesitan crear una cuenta?",
-      "a2": "No. Entran con el código del grupo—solo el anfitrión necesita cuenta.",
-      "q3": "¿Puedo usarlo en clase o en un directo?",
-      "a3": "Por supuesto. Comparte el código o el QR en tu pantalla y empieza el quiz."
+      "q1": "¿Cómo se unen los jugadores?",
+      "a1": "El anfitrión comparte un código de grupo. Los jugadores abren el sitio, ingresan el código y listo.",
+      "q2": "¿Hay límite de preguntas?",
+      "a2": "Sí, el plan gratuito tiene límite. El plan Pro ofrece preguntas ilimitadas y retención de datos.",
+      "q3": "¿Qué idiomas están soportados?",
+      "a3": "Inglés, portugués y español."
     }
   },
 
@@ -69,9 +66,7 @@
     },
     "questionsCount": "{{count}} pregunta",
     "questionsCount_plural": "{{count}} preguntas",
-    "editor": {
-      "title": "Preguntas"
-    },
+    "editor": { "title": "Preguntas" },
     "controls": {
       "title": "Controles",
       "start": "INICIAR QUIZ",
@@ -96,11 +91,7 @@
       "maxTimeHint": "Rango permitido: 5–300 segundos.",
       "language": "Idioma"
     },
-    "lang": {
-      "en": "Inglés",
-      "pt": "Portugués",
-      "es": "Español"
-    },
+    "lang": { "en": "Inglés", "pt": "Portugués", "es": "Español" },
     "questions": {
       "title": "Preguntas",
       "placeholderQuestion": "Pregunta",
@@ -109,30 +100,60 @@
       "add": "Agregar pregunta",
       "remove": "eliminar"
     },
-    "cta": {
-      "createGroup": "Crear grupo"
-    },
+    "cta": { "createGroup": "Crear grupo" },
     "ttl": "Este grupo y sus datos se eliminarán automáticamente en 7 días.",
-    "toast": {
-      "signInRequired": "Inicia sesión como anfitrión."
-    },
-    "validation": {
-      "questionIncomplete": "Completa la pregunta y todas las opciones antes de agregar."
+    "ttl.pro": "Plan Pro: tus datos se conservarán sin autoeliminación.",
+    "toast": { "signInRequired": "Inicia sesión como anfitrión." },
+    "validation": { "questionIncomplete": "Completa la pregunta y todas las opciones antes de agregar." },
+
+    "limit": {
+      "badge": { "pro": "Pro — preguntas ilimitadas", "free": "Gratis — hasta {{limit}} preguntas" },
+      "upgradeCta": "Mejorar plan",
+      "freeCounter": "Aún puedes agregar {{remaining}} pregunta(s) en el plan gratuito.",
+      "freeReached": "Has alcanzado el límite del plan gratuito de {{limit}} preguntas. Mejora para agregar más."
     }
   },
 
   "editor": {
     "title": "Preguntas",
     "subtitle": "{{count}} pregunta(s) agregada(s)",
-    "placeholder": {
-      "question": "Escribe la pregunta",
-      "option": "Opción"
-    },
+    "placeholder": { "question": "Escribe la pregunta", "option": "Opción" },
     "correct": "correcta",
     "addQuestion": "Agregar pregunta",
     "remove": "eliminar",
-    "validation": {
-      "incomplete": "Completa todos los campos antes de agregar."
-    }
+    "validation": { "incomplete": "Completa todos los campos antes de agregar." }
+  },
+
+  "pricing": {
+    "title": "Precios",
+    "subtitle": "Empieza gratis. Mejora cuando quieras.",
+    "billingToggle": { "monthly": "Mensual", "annual": "Anual (ahorra 2 meses)" },
+    "plans": {
+      "free": {
+        "name": "Gratis",
+        "priceMonthly": "$0",
+        "priceAnnual": "$0",
+        "cta": "Empezar gratis",
+        "features": [
+          "Hasta {{limit}} preguntas por quiz",
+          "Datos autoeliminados a los 7 días",
+          "Ingreso por código",
+          "Interfaz multilingüe"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "priceMonthly": "US$6.90",
+        "priceAnnual": "US$59",
+        "cta": "Pasar a Pro",
+        "features": [
+          "Preguntas ilimitadas",
+          "Datos conservados sin autoeliminación",
+          "Soporte prioritario",
+          "Próximas funciones incluidas"
+        ]
+      }
+    },
+    "footnote": "Precios en USD. Pueden aplicar impuestos."
   }
 }
