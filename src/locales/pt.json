@@ -18,6 +18,9 @@
   "home.host.errors.usernameOrPassword": "Informe um nome de usuário (sem espaços) e uma senha.",
   "home.host.errors.loginGeneric": "Erro ao entrar. Tente novamente.",
   "home.host.errors.registerGeneric": "Não foi possível criar a conta. Tente novamente.",
+  "home.host.errors.tooManyRequests": "Muitas tentativas de login. Aguarde um momento e tente novamente.",
+  "home.host.errors.emailInUse": "Este nome de usuário já está sendo utilizado.",
+  "home.host.errors.weakPassword": "A senha é muito fraca. Escolha uma senha mais forte.",
 
   "home.join.label": "Entrar com código do grupo",
   "home.join.placeholder": "código",
@@ -49,7 +52,13 @@
 
   "common": {
     "back": "Voltar",
-    "copied": "Copiado!"
+    "copied": "Copiado!",
+    "attention": "Atenção",
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "ok": "OK",
+    "cancel": "Cancelar"
   },
 
   "host": {
@@ -77,7 +86,8 @@
     "playersJoinAt": "Jogadores entram em:",
     "errors": {
       "open": "Falha ao abrir o quiz. Verifique as regras do Firestore e o hostUid.",
-      "finish": "Falha ao finalizar o quiz. Verifique as regras do Firestore."
+      "finish": "Falha ao finalizar o quiz. Verifique as regras do Firestore.",
+      "invalidCredential": "Usuário ou senha incorretos."      
     }
   },
 
@@ -154,6 +164,9 @@
         ]
       }
     },
+    "loginRequired": "Você precisa estar logado para continuar.",
+    "redirecting": "Redirecionando para a página de pagamento...",
+    "error": "Ocorreu um erro ao iniciar o checkout. Tente novamente.",
     "footnote": "Preços em USD. Impostos podem ser aplicados."
   }
 }

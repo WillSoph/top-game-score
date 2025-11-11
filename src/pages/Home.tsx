@@ -21,6 +21,8 @@ import AvatarCircle from '../components/ui/avatar-circle';
 import AuthPanel from '../components/ui/auth-panel';
 import PricingPlans from '../components/ui/pricing-plans';
 import { useStripeUpgrade } from '../hooks/useStripeUpgrade';
+import Dialog from '../components/ui/dialog';
+import Footer from '../components/ui/footer';
 
 /* ===========================
    Types
@@ -42,6 +44,18 @@ export default function Home() {
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false); // <-- loading local para login/register
 
+  const [dlgOpen, setDlgOpen] = useState(false);
+  const [dlgTitle, setDlgTitle] = useState<string>('');
+  const [dlgMsg, setDlgMsg] = useState<React.ReactNode>('');
+  const [dlgVariant, setDlgVariant] = useState<'info'|'success'|'warning'|'danger'>('info');
+
+  function openDialog(title: string, msg: React.ReactNode, variant: 'info'|'success'|'warning'|'danger'='info') {
+    setDlgTitle(title);
+    setDlgMsg(msg);
+    setDlgVariant(variant);
+    setDlgOpen(true);
+  }
+
   const emailFromUsername = (u: string) => `${u}@host.local`;
 
   useEffect(() => {
@@ -58,65 +72,89 @@ export default function Home() {
   }
 
   async function handleLogin() {
-    if (!username.trim() || username.includes(' ') || !password) {
-      alert(t('home.host.errors.usernameOrPassword'));
-      return;
-    }
-    setAuthLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, emailFromUsername(username.trim()), password);
-      nav('/dashboard');
-    } catch {
-      alert(t('home.host.errors.loginGeneric'));
-    } finally {
-      setAuthLoading(false);
-    }
+  if (!username.trim() || username.includes(' ') || !password) {
+    openDialog(t('common.attention'), t('home.host.errors.usernameOrPassword'), 'warning');
+    return;
   }
 
-  async function handleRegister() {
-    if (!username.trim() || username.includes(' ') || !password) {
-      alert(t('home.host.errors.usernameOrPassword'));
-      return;
-    }
-    setAuthLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, emailFromUsername(username.trim()), password);
-      nav('/create');
-    } catch {
-      alert(t('home.host.errors.registerGeneric'));
-    } finally {
-      setAuthLoading(false);
-    }
+  setAuthLoading(true);
+  try {
+    await signInWithEmailAndPassword(auth, emailFromUsername(username.trim()), password);
+    nav('/dashboard');
+  } catch (e: any) {
+    // se quiser mensagens específicas por erro do Firebase:
+    const code = e?.code as string | undefined;
+    const specific =
+      code === 'auth/invalid-credential'
+        ? t('home.host.errors.invalidCredential')
+        : code === 'auth/too-many-requests'
+        ? t('home.host.errors.tooManyRequests')
+        : t('home.host.errors.loginGeneric');
+
+    openDialog(t('common.error'), specific, 'danger');
+  } finally {
+    setAuthLoading(false);
+  }
+}
+
+async function handleRegister() {
+  if (!username.trim() || username.includes(' ') || !password) {
+    openDialog(t('common.attention'), t('home.host.errors.usernameOrPassword'), 'warning');
+    return;
   }
 
-  // handler do botão Pro
-  async function handleSelectPro(billing: 'monthly' | 'annual') {
-    if (!auth.currentUser) {
-      alert(t('pricing.loginRequired'));
-      return;
-    }
-    alert(t('pricing.redirecting'));
-    const res = await startCheckout(billing, i18n.language);
-    if (!res.ok && res.reason === 'error') {
-      alert(t('pricing.error'));
-    }
+  setAuthLoading(true);
+  try {
+    await createUserWithEmailAndPassword(auth, emailFromUsername(username.trim()), password);
+    nav('/create');
+  } catch (e: any) {
+    const code = e?.code as string | undefined;
+    const specific =
+      code === 'auth/email-already-in-use'
+        ? t('home.host.errors.emailInUse')
+        : code === 'auth/weak-password'
+        ? t('home.host.errors.weakPassword')
+        : t('home.host.errors.registerGeneric');
+
+    openDialog(t('common.error'), specific, 'danger');
+  } finally {
+    setAuthLoading(false);
+  }
+}
+
+// handler do botão Pro
+async function handleSelectPro(billing: 'monthly' | 'annual') {
+  if (!auth.currentUser) {
+    openDialog(t('common.attention'), t('pricing.loginRequired'), 'warning');
+    return;
   }
 
-  // handler do Free (opcional)
-  function handleSelectFree() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  openDialog(t('pricing.title'), t('pricing.redirecting'), 'info');
+  const res = await startCheckout(billing, i18n.language);
+  if (!res.ok && res.reason === 'error') {
+    openDialog(t('common.error'), t('pricing.error'), 'danger');
+  }
+}
+
+// handler do Free (opcional)
+function handleSelectFree() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Portal do cliente (opcional)
+async function handleManageSubscription() {
+  if (!auth.currentUser) {
+    openDialog(t('common.attention'), t('pricing.loginRequired'), 'warning');
+    return;
   }
 
-  // Portal do cliente (opcional)
-  async function handleManageSubscription() {
-    if (!auth.currentUser) {
-      alert(t('pricing.loginRequired'));
-      return;
-    }
-    alert(t('pricing.redirecting'));
-    const res = await openPortal(`${import.meta.env.VITE_SITE_URL}/dashboard`);
-    if (!res.ok) alert(t('pricing.error'));
+  openDialog(t('pricing.title'), t('pricing.redirecting'), 'info');
+  const res = await openPortal(`${import.meta.env.VITE_SITE_URL}/dashboard`);
+  if (!res.ok) {
+    openDialog(t('common.error'), t('pricing.error'), 'danger');
   }
+}
+
 
   const hostName =
     user?.displayName ||
@@ -353,6 +391,15 @@ export default function Home() {
           </section>
         </div>
       </div>
+      <Dialog
+        open={dlgOpen}
+        onClose={() => setDlgOpen(false)}
+        title={dlgTitle}
+        description={dlgMsg}
+        variant={dlgVariant}
+      />
+
+      <Footer />
     </>
   );
 }

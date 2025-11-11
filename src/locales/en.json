@@ -18,6 +18,10 @@
   "home.host.errors.usernameOrPassword": "Enter a username (no spaces) and a password.",
   "home.host.errors.loginGeneric": "Login error. Please try again.",
   "home.host.errors.registerGeneric": "Could not create the account. Please try again.",
+  "home.host.errors.invalidCredential": "Invalid username or password.",
+  "home.host.errors.tooManyRequests": "Too many attempts. Please wait and try again.",
+  "home.host.errors.emailInUse": "This username is already in use.",
+  "home.host.errors.weakPassword": "Password is too weak. Please choose a stronger one.",
 
   "home.join.label": "Join with group code",
   "home.join.placeholder": "code",
@@ -51,7 +55,13 @@
 
   "common": {
     "back": "Back",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "attention": "Attention",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "ok": "OK",
+    "cancel": "Cancel"
   },
 
   "host": {
@@ -156,6 +166,9 @@
         ]
       }
     },
+    "loginRequired": "You must be logged in to continue.",
+    "redirecting": "Redirecting to the payment page...",
+    "error": "An error occurred while starting checkout. Please try again.",
     "footnote": "Prices in USD. Taxes may apply."
   }
 }

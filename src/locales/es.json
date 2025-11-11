@@ -18,6 +18,10 @@
   "home.host.errors.usernameOrPassword": "Indica un usuario (sin espacios) y una contraseña.",
   "home.host.errors.loginGeneric": "Error de inicio de sesión. Inténtalo de nuevo.",
   "home.host.errors.registerGeneric": "No se pudo crear la cuenta. Inténtalo de nuevo.",
+  "home.host.errors.invalidCredential": "Usuario o contraseña incorrectos.",
+  "home.host.errors.tooManyRequests": "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
+  "home.host.errors.emailInUse": "Este nombre de usuario ya está en uso.",
+  "home.host.errors.weakPassword": "La contraseña es demasiado débil. Usa una más fuerte.",
 
   "home.join.label": "Entrar con código del grupo",
   "home.join.placeholder": "código",
@@ -49,7 +53,13 @@
 
   "common": {
     "back": "Volver",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "attention": "Atención",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "ok": "OK",
+    "cancel": "Cancelar"
   },
 
   "host": {
@@ -154,6 +164,9 @@
         ]
       }
     },
+    "loginRequired": "Debes iniciar sesión para continuar.",
+    "redirecting": "Redirigiendo a la página de pago...",
+    "error": "Ocurrió un error al iniciar el pago. Inténtalo de nuevo.",
     "footnote": "Precios en USD. Pueden aplicar impuestos."
   }
 }
