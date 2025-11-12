@@ -5,6 +5,7 @@ import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "react-i18next";
+import { ChevronLeft } from "lucide-react";
 
 type Group = {
   id: string;
@@ -15,7 +16,7 @@ type Group = {
 
 export default function DashboardPage() {
   const nav = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [groups, setGroups] = useState<Group[]>([]);
   const [qrZoom, setQrZoom] = useState<Group | null>(null);
   const playBase = `${window.location.origin}/play/`;
@@ -45,18 +46,26 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-3 sm:pb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
-          Top Game Score
-        </h1>
-
-        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+      <div className="flex flex-col gap-3 sm:gap-4 border-b border-slate-800 pb-3 sm:pb-4">
+        {/* Linha 1: voltar + título */}
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => history.back()}
-            className="w-fit text-sm text-slate-300 hover:text-white transition"
+            onClick={() => (window.history.length > 1 ? nav(-1) : nav("/"))}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/70 border border-slate-700 text-slate-200 hover:bg-slate-800 transition"
+            aria-label={t("common.back")}
+            title={t("common.back")}
           >
-            ← {t('common.back')}
+            <ChevronLeft className="h-4 w-4" />
+            <span className="text-sm">{t("common.back")}</span>
           </button>
+
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            Top Game Score
+          </h1>
+        </div>
+
+        {/* Linha 2: ações */}
+        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => nav("/create")}
             className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 transition font-medium"
