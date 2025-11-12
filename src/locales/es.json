@@ -29,7 +29,7 @@
 
   "brand": "TopGameScore",
   "seo": {
-    "title": "Panel del Anfitrión",
+    "title": "Top Game Score",
     "description": "Crea, gestiona y controla tus cuestionarios en vivo en tiempo real con TopGameScore — la forma inteligente de jugar y competir.",
     "keywords": "quiz en vivo, trivia, cuestionarios en tiempo real, anfitrión online, herramienta para clases, interacción con audiencia",
     "appName": "TopGameScore",
@@ -117,10 +117,10 @@
     "validation": { "questionIncomplete": "Completa la pregunta y todas las opciones antes de agregar." },
 
     "limit": {
-      "badge": { "pro": "Pro — preguntas ilimitadas", "free": "Gratis — hasta {{limit}} preguntas" },
+      "badge": { "pro": "Pro — preguntas ilimitadas", "free": "Gratis — hasta 10 preguntas" },
       "upgradeCta": "Mejorar plan",
       "freeCounter": "Aún puedes agregar {{remaining}} pregunta(s) en el plan gratuito.",
-      "freeReached": "Has alcanzado el límite del plan gratuito de {{limit}} preguntas. Mejora para agregar más."
+      "freeReached": "Has alcanzado el límite del plan gratuito de 10 preguntas. Mejora para agregar más."
     }
   },
 

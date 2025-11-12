@@ -4,6 +4,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
+import { useTranslation } from "react-i18next";
 
 type Group = {
   id: string;
@@ -14,6 +15,7 @@ type Group = {
 
 export default function DashboardPage() {
   const nav = useNavigate();
+  const { t, i18n } = useTranslation();
   const [groups, setGroups] = useState<Group[]>([]);
   const [qrZoom, setQrZoom] = useState<Group | null>(null);
   const playBase = `${window.location.origin}/play/`;
@@ -49,6 +51,12 @@ export default function DashboardPage() {
         </h1>
 
         <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => history.back()}
+            className="w-fit text-sm text-slate-300 hover:text-white transition"
+          >
+            ← {t('common.back')}
+          </button>
           <button
             onClick={() => nav("/create")}
             className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 transition font-medium"

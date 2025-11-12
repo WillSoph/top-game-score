@@ -28,7 +28,7 @@
 
   "brand": "TopGameScore",
   "seo": {
-    "title": "Painel do Host",
+    "title": "Top Game Score",
     "description": "Crie, gerencie e controle seus quizzes em tempo real com o TopGameScore — a forma inteligente de jogar e competir.",
     "keywords": "quiz ao vivo, quiz multiplayer, trivia, tempo real, hospedar quiz online, ferramenta para aulas, engajamento de audiência",
     "appName": "TopGameScore",
@@ -117,10 +117,10 @@
     "validation": { "questionIncomplete": "Preencha a pergunta e todas as opções antes de adicionar." },
 
     "limit": {
-      "badge": { "pro": "Pro — perguntas ilimitadas", "free": "Grátis — até {{limit}} perguntas" },
+      "badge": { "pro": "Pro — perguntas ilimitadas", "free": "Grátis — até 10 perguntas" },
       "upgradeCta": "Fazer upgrade",
       "freeCounter": "Você ainda pode adicionar {{remaining}} pergunta(s) no plano gratuito.",
-      "freeReached": "Você atingiu o limite do plano gratuito de {{limit}} perguntas. Faça upgrade para adicionar mais."
+      "freeReached": "Você atingiu o limite do plano gratuito de 10 perguntas. Faça upgrade para adicionar mais."
     }
   },
 

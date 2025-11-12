@@ -31,7 +31,7 @@
 
   "brand": "TopGameScore",
   "seo": {
-    "title": "Host Panel",
+    "title": "Top Game Score",
     "description": "Create, manage and control your live quizzes in real time with TopGameScore — the smart way to play and compete.",
     "keywords": "live quiz, multiplayer quiz, trivia app, real-time quiz, host quizzes online, classroom quiz tool, audience engagement",
     "appName": "TopGameScore",
@@ -119,10 +119,10 @@
     "validation": { "questionIncomplete": "Fill in the question and all options before adding." },
 
     "limit": {
-      "badge": { "pro": "Pro — unlimited questions", "free": "Free — up to {{limit}} questions" },
+      "badge": { "pro": "Pro — unlimited questions", "free": "Free — up to 10 questions" },
       "upgradeCta": "Upgrade",
       "freeCounter": "You can still add {{remaining}} question(s) on the free plan.",
-      "freeReached": "You reached the free plan limit of {{limit}} questions. Upgrade to add more."
+      "freeReached": "You reached the free plan limit of 10 questions. Upgrade to add more."
     }
   },
 
