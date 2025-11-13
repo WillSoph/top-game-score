@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
+import { useStripeUpgrade } from "../hooks/useStripeUpgrade";
 
 type Group = {
   id: string;
@@ -20,6 +21,8 @@ export default function DashboardPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [qrZoom, setQrZoom] = useState<Group | null>(null);
   const playBase = `${window.location.origin}/play/`;
+
+  const { loading: stripeLoading, openPortal } = useStripeUpgrade();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -43,11 +46,22 @@ export default function DashboardPage() {
     nav("/");
   }
 
+  async function handleManageSubscription() {
+    if (!auth.currentUser) {
+      // aqui no futuro podemos abrir um Dialog com t('pricing.loginRequired')
+      return;
+    }
+
+    const result = await openPortal(`${window.location.origin}/dashboard`);
+    // se quiser, pode tratar erro depois:
+    // if (!result.ok) { ... }
+  }
+
   return (
     <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:gap-4 border-b border-slate-800 pb-3 sm:pb-4">
-        {/* Linha 1: voltar + título */}
+        {/* Row 1: back + title */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => (window.history.length > 1 ? nav(-1) : nav("/"))}
@@ -60,27 +74,38 @@ export default function DashboardPage() {
           </button>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
-            Top Game Score
+            {t("brand")}
           </h1>
         </div>
 
-        {/* Linha 2: ações */}
-        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+        {/* Row 2: actions */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => nav("/create")}
             className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 transition font-medium"
-            aria-label="Create a new quiz"
-            title="Create a new quiz"
+            aria-label={t("dashboard.actions.newQuizAria")}
+            title={t("dashboard.actions.newQuizAria")}
           >
-            ➕ <span className="hidden xs:inline">New Quiz</span>
+            ➕ <span className="hidden xs:inline">{t("dashboard.actions.newQuiz")}</span>
           </button>
+
+          <button
+            onClick={handleManageSubscription}
+            disabled={stripeLoading === "portal"}
+            className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 transition font-medium"
+            aria-label={t("billing.manage")}
+            title={t("billing.manage")}
+          >
+            {t("billing.manage")}
+          </button>
+
           <button
             onClick={handleLogout}
             className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition font-medium"
-            aria-label="Logout"
-            title="Logout"
+            aria-label={t("dashboard.actions.logoutAria")}
+            title={t("dashboard.actions.logoutAria")}
           >
-            Logout
+            {t("dashboard.actions.logout")}
           </button>
         </div>
       </div>
@@ -99,9 +124,11 @@ export default function DashboardPage() {
 
         {groups.length === 0 && (
           <div className="col-span-full text-center py-10 text-slate-400 italic border border-slate-800 rounded-xl bg-slate-900/40">
-            You haven’t created any quizzes yet.
+            {t("dashboard.empty.line1")}
             <br />
-            <span className="text-indigo-400 not-italic">Tap “New Quiz” to start!</span>
+            <span className="text-indigo-400 not-italic">
+              {t("dashboard.empty.line2")}
+            </span>
           </div>
         )}
       </div>
@@ -111,10 +138,10 @@ export default function DashboardPage() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 shadow-xl p-5 sm:p-6 text-center">
             <h3 className="font-semibold text-lg sm:text-xl text-slate-100 mb-3">
-              QR Code — {qrZoom.title || qrZoom.code}
+              {t("dashboard.qr.title", { label: qrZoom.title || qrZoom.code })}
             </h3>
 
-            {/* QR responsivo */}
+            {/* Responsive QR */}
             <div className="mx-auto inline-block">
               <QRCodeCanvas
                 value={`${playBase}${qrZoom.code}`}
@@ -137,7 +164,7 @@ export default function DashboardPage() {
               onClick={() => setQrZoom(null)}
               className="mt-5 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-sm"
             >
-              Close
+              {t("dashboard.qr.close")}
             </button>
           </div>
         </div>
@@ -159,6 +186,7 @@ function GroupCard({
   onOpenQR: () => void;
   onOpenHost: () => void;
 }) {
+  const { t } = useTranslation();
   const [winner, setWinner] = useState<{ name: string; totalScore: number } | null>(null);
 
   useEffect(() => {
@@ -174,8 +202,8 @@ function GroupCard({
       const playersSnap = await getDocs(collection(db, "groups", group.id, "players"));
       const players = new Map(playersSnap.docs.map((d) => [d.id, d.data() as any]));
 
-      let bestId = "",
-        bestScore = -1;
+      let bestId = "";
+      let bestScore = -1;
       byPlayer.forEach((score, id) => {
         if (score > bestScore) {
           bestScore = score;
@@ -183,26 +211,31 @@ function GroupCard({
         }
       });
       const p = players.get(bestId);
-      setWinner({ name: p?.name || "Player", totalScore: bestScore });
+      setWinner({
+        name: p?.name || t("dashboard.group.playerFallback"),
+        totalScore: bestScore,
+      });
     })();
-  }, [group.id]);
+  }, [group.id, t]);
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:border-indigo-600 transition-all duration-200 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="font-semibold text-base sm:text-lg text-slate-100 truncate">
-            {group.title || "Quiz"}
+            {group.title || t("dashboard.group.defaultQuizTitle")}
           </div>
-          <div className="text-xs text-slate-500">Code: {group.code}</div>
+          <div className="text-xs text-slate-500">
+            {t("dashboard.group.codeLabel", { code: group.code })}
+          </div>
         </div>
         <button
           onClick={onOpenQR}
           className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs"
-          aria-label="Show QR code"
-          title="Show QR code"
+          aria-label={t("dashboard.qr.showAria")}
+          title={t("dashboard.qr.showAria")}
         >
-          Show QR
+          {t("dashboard.qr.show")}
         </button>
       </div>
 
@@ -220,19 +253,19 @@ function GroupCard({
           onClick={onOpenHost}
           className="px-3 py-1.5 rounded-md bg-emerald-700 hover:bg-emerald-600 text-sm font-medium transition"
         >
-          Manage
+          {t("dashboard.group.manage")}
         </button>
       </div>
 
       <div className="text-sm mt-2">
-        <div className="text-slate-400 mb-1">Top Player</div>
+        <div className="text-slate-400 mb-1">{t("dashboard.group.topPlayer")}</div>
         {winner ? (
           <div className="flex justify-between text-slate-200">
             <span className="truncate">{winner.name}</span>
             <span className="font-mono text-emerald-400">{winner.totalScore}</span>
           </div>
         ) : (
-          <div className="italic text-slate-500">No players yet</div>
+          <div className="italic text-slate-500">{t("dashboard.group.noPlayers")}</div>
         )}
       </div>
     </div>

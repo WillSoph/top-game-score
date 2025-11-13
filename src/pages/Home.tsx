@@ -34,7 +34,7 @@ type AuthStep = 'none' | 'choose' | 'login' | 'register';
 =========================== */
 export default function Home() {
   const { t, i18n } = useTranslation();
-  const { loading: stripeLoading, startCheckout, openPortal } = useStripeUpgrade(); // loading do hook (checkout/portal)
+  const { loading: stripeLoading, startCheckout, openPortal } = useStripeUpgrade();
   const nav = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
@@ -42,21 +42,31 @@ export default function Home() {
   const [authStep, setAuthStep] = useState<AuthStep>('none');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [authLoading, setAuthLoading] = useState(false); // <-- loading local para login/register
+  const [email, setEmail] = useState(''); // email real para registro/reset
+  const [authLoading, setAuthLoading] = useState(false);
 
+  // Dialog state
   const [dlgOpen, setDlgOpen] = useState(false);
   const [dlgTitle, setDlgTitle] = useState<string>('');
   const [dlgMsg, setDlgMsg] = useState<React.ReactNode>('');
-  const [dlgVariant, setDlgVariant] = useState<'info'|'success'|'warning'|'danger'>('info');
+  const [dlgVariant, setDlgVariant] = useState<'info' | 'success' | 'warning' | 'danger'>('info');
 
-  function openDialog(title: string, msg: React.ReactNode, variant: 'info'|'success'|'warning'|'danger'='info') {
+  function openDialog(
+    title: string,
+    msg: React.ReactNode,
+    variant: 'info' | 'success' | 'warning' | 'danger' = 'info'
+  ) {
     setDlgTitle(title);
     setDlgMsg(msg);
     setDlgVariant(variant);
     setDlgOpen(true);
   }
 
-  const emailFromUsername = (u: string) => `${u}@host.local`;
+  // helper: aceita username simples ou e-mail
+  function toLoginEmail(input: string) {
+    const v = input.trim();
+    return v.includes('@') ? v : `${v}@host.local`;
+  }
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
@@ -71,91 +81,94 @@ export default function Home() {
     setAuthStep('choose');
   }
 
+  /* ===========================
+     Auth handlers
+  =========================== */
   async function handleLogin() {
-  if (!username.trim() || username.includes(' ') || !password) {
-    openDialog(t('common.attention'), t('home.host.errors.usernameOrPassword'), 'warning');
-    return;
+    const id = username.trim();
+    if (!id || id.includes(' ') || !password) {
+      openDialog(t('common.attention'), t('home.host.errors.usernameOrPassword'), 'warning');
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, toLoginEmail(id), password);
+      nav('/dashboard');
+    } catch (e) {
+      openDialog(t('common.error'), t('home.host.errors.loginGeneric'), 'danger');
+    } finally {
+      setAuthLoading(false);
+    }
   }
 
-  setAuthLoading(true);
-  try {
-    await signInWithEmailAndPassword(auth, emailFromUsername(username.trim()), password);
-    nav('/dashboard');
-  } catch (e: any) {
-    // se quiser mensagens específicas por erro do Firebase:
-    const code = e?.code as string | undefined;
-    const specific =
-      code === 'auth/invalid-credential'
-        ? t('home.host.errors.invalidCredential')
-        : code === 'auth/too-many-requests'
-        ? t('home.host.errors.tooManyRequests')
-        : t('home.host.errors.loginGeneric');
-
-    openDialog(t('common.error'), specific, 'danger');
-  } finally {
-    setAuthLoading(false);
-  }
-}
-
-async function handleRegister() {
-  if (!username.trim() || username.includes(' ') || !password) {
-    openDialog(t('common.attention'), t('home.host.errors.usernameOrPassword'), 'warning');
-    return;
+  async function handleRegister() {
+    const id = username.trim();
+    const em = email.trim();
+    if (!id || id.includes(' ') || !password || !em || !/^\S+@\S+\.\S+$/.test(em)) {
+      openDialog(t('common.attention'), t('home.host.errors.usernamePasswordEmail'), 'warning');
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      // registra com email real
+      await createUserWithEmailAndPassword(auth, em, password);
+      nav('/create');
+    } catch (e) {
+      openDialog(t('common.error'), t('home.host.errors.registerGeneric'), 'danger');
+    } finally {
+      setAuthLoading(false);
+    }
   }
 
-  setAuthLoading(true);
-  try {
-    await createUserWithEmailAndPassword(auth, emailFromUsername(username.trim()), password);
-    nav('/create');
-  } catch (e: any) {
-    const code = e?.code as string | undefined;
-    const specific =
-      code === 'auth/email-already-in-use'
-        ? t('home.host.errors.emailInUse')
-        : code === 'auth/weak-password'
-        ? t('home.host.errors.weakPassword')
-        : t('home.host.errors.registerGeneric');
-
-    openDialog(t('common.error'), specific, 'danger');
-  } finally {
-    setAuthLoading(false);
-  }
-}
-
-// handler do botão Pro
-async function handleSelectPro(billing: 'monthly' | 'annual') {
-  if (!auth.currentUser) {
-    openDialog(t('common.attention'), t('pricing.loginRequired'), 'warning');
-    return;
+  async function handleForgotPassword() {
+    const em = email.trim();
+    if (!/^\S+@\S+\.\S+$/.test(em)) {
+      openDialog(t('common.attention'), t('home.host.errors.validEmailRequired'), 'warning');
+      return;
+    }
+    try {
+      const { sendPasswordResetEmail } = await import('firebase/auth');
+      await sendPasswordResetEmail(auth, em);
+      openDialog(t('common.success'), t('home.host.resetPassword.sent'), 'success');
+    } catch (e) {
+      openDialog(t('common.error'), t('home.host.resetPassword.failed'), 'danger');
+    }
   }
 
-  openDialog(t('pricing.title'), t('pricing.redirecting'), 'info');
-  const res = await startCheckout(billing, i18n.language);
-  if (!res.ok && res.reason === 'error') {
-    openDialog(t('common.error'), t('pricing.error'), 'danger');
-  }
-}
-
-// handler do Free (opcional)
-function handleSelectFree() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Portal do cliente (opcional)
-async function handleManageSubscription() {
-  if (!auth.currentUser) {
-    openDialog(t('common.attention'), t('pricing.loginRequired'), 'warning');
-    return;
+  /* ===========================
+     Pricing / Stripe handlers
+  =========================== */
+  async function handleSelectPro(billing: 'monthly' | 'annual') {
+    if (!auth.currentUser) {
+      openDialog(t('common.attention'), t('pricing.loginRequired'), 'warning');
+      return;
+    }
+    openDialog(t('pricing.title'), t('pricing.redirecting'), 'info');
+    const res = await startCheckout(billing, i18n.language);
+    if (!res.ok && res.reason === 'error') {
+      openDialog(t('common.error'), t('pricing.error'), 'danger');
+    }
   }
 
-  openDialog(t('pricing.title'), t('pricing.redirecting'), 'info');
-  const res = await openPortal(`${import.meta.env.VITE_SITE_URL}/dashboard`);
-  if (!res.ok) {
-    openDialog(t('common.error'), t('pricing.error'), 'danger');
+  function handleSelectFree() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-}
 
+  async function handleManageSubscription() {
+    if (!auth.currentUser) {
+      openDialog(t('common.attention'), t('pricing.loginRequired'), 'warning');
+      return;
+    }
+    openDialog(t('pricing.title'), t('pricing.redirecting'), 'info');
+    const res = await openPortal(`${import.meta.env.VITE_SITE_URL}/dashboard`);
+    if (!res.ok) {
+      openDialog(t('common.error'), t('pricing.error'), 'danger');
+    }
+  }
 
+  /* ===========================
+     Derived UI
+  =========================== */
   const hostName =
     user?.displayName ||
     (user?.email ? user.email.split('@')[0] : '') ||
@@ -274,9 +287,7 @@ async function handleManageSubscription() {
                   <span className="truncate text-sm">{hostName}</span>
                 </button>
               ) : (
-                <ButtonSecondary onClick={() => setAuthStep('login')}>
-                  {t('home.modal.login')}
-                </ButtonSecondary>
+                <ButtonSecondary onClick={() => setAuthStep('login')}>{t('home.modal.login')}</ButtonSecondary>
               )}
             </div>
 
@@ -295,9 +306,7 @@ async function handleManageSubscription() {
                   </span>
                 </button>
               ) : (
-                <ButtonSecondary onClick={() => setAuthStep('login')}>
-                  {t('home.modal.login')}
-                </ButtonSecondary>
+                <ButtonSecondary onClick={() => setAuthStep('login')}>{t('home.modal.login')}</ButtonSecondary>
               )}
             </div>
           </div>
@@ -331,6 +340,10 @@ async function handleManageSubscription() {
                   password={password}
                   setUsername={setUsername}
                   setPassword={setPassword}
+                  // novos props conectando as funções novas:
+                  email={email}
+                  setEmail={setEmail}
+                  onForgotPassword={handleForgotPassword}
                   onLogin={handleLogin}
                   onRegister={handleRegister}
                   loading={authLoading}
@@ -370,15 +383,15 @@ async function handleManageSubscription() {
             freeLimit={10}
             onSelectFree={handleSelectFree}
             onSelectPro={handleSelectPro}
-            isBusy={stripeLoading === 'checkout'} /* opcional: mostra loading no botão Pro */
+            isBusy={stripeLoading === 'checkout'}
           />
-          {/* Ex.: botão opcional para abrir o portal
-          <div className="mt-3">
+
+          {/* Ex.: botão opcional para abrir o portal do cliente */}
+          {/* <div className="mt-3">
             <ButtonSecondary disabled={stripeLoading === 'portal'} onClick={handleManageSubscription}>
-              {stripeLoading === 'portal' ? '…' : 'Manage subscription'}
+              {stripeLoading === 'portal' ? '…' : t('pricing.manageSubscription')}
             </ButtonSecondary>
-          </div>
-          */}
+          </div> */}
 
           {/* FAQ visível */}
           <section className="mt-8">
@@ -391,13 +404,9 @@ async function handleManageSubscription() {
           </section>
         </div>
       </div>
-      <Dialog
-        open={dlgOpen}
-        onClose={() => setDlgOpen(false)}
-        title={dlgTitle}
-        description={dlgMsg}
-        variant={dlgVariant}
-      />
+
+      {/* Dialog global */}
+      <Dialog open={dlgOpen} onClose={() => setDlgOpen(false)} title={dlgTitle} description={dlgMsg} variant={dlgVariant} />
 
       <Footer />
     </>

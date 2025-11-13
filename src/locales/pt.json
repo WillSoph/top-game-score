@@ -61,6 +61,33 @@
     "cancel": "Cancelar"
   },
 
+  "dashboard": {
+    "actions": {
+      "newQuiz": "Novo Quiz",
+      "newQuizAria": "Criar um novo quiz",
+      "logout": "Sair",
+      "logoutAria": "Encerrar sessão"
+    },
+    "empty": {
+      "line1": "Você ainda não criou nenhum quiz.",
+      "line2": "Toque em “Novo Quiz” para começar!"
+    },
+    "qr": {
+      "title": "QR Code — {{label}}",
+      "show": "Mostrar QR",
+      "showAria": "Mostrar código QR",
+      "close": "Fechar"
+    },
+    "group": {
+      "defaultQuizTitle": "Quiz",
+      "codeLabel": "Código: {{code}}",
+      "manage": "Gerenciar",
+      "topPlayer": "Melhor Jogador",
+      "noPlayers": "Ainda não há jogadores",
+      "playerFallback": "Jogador"
+    }
+  },
+
   "host": {
     "heading": "Host",
     "mustSignIn": "Faça login como host para controlar o quiz.",
@@ -73,6 +100,8 @@
       "open": "Aberto",
       "finished": "Finalizado"
     },
+    "email": "E-mail",
+    "forgot": "Esqueci minha senha",
     "questionsCount": "{{count}} pergunta",
     "questionsCount_plural": "{{count}} perguntas",
     "editor": { "title": "Perguntas" },
@@ -90,6 +119,8 @@
       "invalidCredential": "Usuário ou senha incorretos."      
     }
   },
+
+  "registerHint": "Ao criar sua conta, você poderá acessar seus quizzes de qualquer dispositivo.",
 
   "create": {
     "title": "Configurar Quiz",
@@ -132,6 +163,10 @@
     "addQuestion": "Adicionar pergunta",
     "remove": "remover",
     "validation": { "incomplete": "Preencha todos os campos antes de adicionar." }
+  },
+
+  "billing": {
+    "manage": "Gerenciar assinatura"
   },
 
   "pricing": {

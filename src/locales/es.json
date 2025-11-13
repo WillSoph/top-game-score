@@ -62,6 +62,33 @@
     "cancel": "Cancelar"
   },
 
+  "dashboard": {
+    "actions": {
+      "newQuiz": "Nuevo Quiz",
+      "newQuizAria": "Crear un nuevo quiz",
+      "logout": "Salir",
+      "logoutAria": "Cerrar sesión"
+    },
+    "empty": {
+      "line1": "Aún no has creado ningún quiz.",
+      "line2": "Toca “Nuevo Quiz” para empezar."
+    },
+    "qr": {
+      "title": "Código QR — {{label}}",
+      "show": "Mostrar QR",
+      "showAria": "Mostrar código QR",
+      "close": "Cerrar"
+    },
+    "group": {
+      "defaultQuizTitle": "Quiz",
+      "codeLabel": "Código: {{code}}",
+      "manage": "Administrar",
+      "topPlayer": "Mejor Jugador",
+      "noPlayers": "Aún no hay jugadores",
+      "playerFallback": "Jugador"
+    }
+  },
+
   "host": {
     "heading": "Anfitrión",
     "mustSignIn": "Inicia sesión como anfitrión para controlar el cuestionario.",
@@ -74,6 +101,8 @@
       "open": "Abierto",
       "finished": "Finalizado"
     },
+    "email": "Correo electrónico",
+    "forgot": "¿Olvidaste tu contraseña?",
     "questionsCount": "{{count}} pregunta",
     "questionsCount_plural": "{{count}} preguntas",
     "editor": { "title": "Preguntas" },
@@ -89,6 +118,12 @@
       "open": "No se pudo abrir el cuestionario. Verifica las reglas de Firestore y el hostUid.",
       "finish": "No se pudo finalizar el cuestionario. Verifica las reglas de Firestore."
     }
+  },
+
+  "registerHint": "Al crear tu cuenta, podrás acceder a tus cuestionarios desde cualquier dispositivo.",
+
+  "billing": {
+    "manage": "Gestionar suscripción"
   },
 
   "create": {

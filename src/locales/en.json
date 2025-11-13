@@ -64,6 +64,33 @@
     "cancel": "Cancel"
   },
 
+  "dashboard": {
+    "actions": {
+      "newQuiz": "New Quiz",
+      "newQuizAria": "Create a new quiz",
+      "logout": "Logout",
+      "logoutAria": "Logout"
+    },
+    "empty": {
+      "line1": "You haven’t created any quizzes yet.",
+      "line2": "Tap “New Quiz” to start!"
+    },
+    "qr": {
+      "title": "QR Code — {{label}}",
+      "show": "Show QR",
+      "showAria": "Show QR code",
+      "close": "Close"
+    },
+    "group": {
+      "defaultQuizTitle": "Quiz",
+      "codeLabel": "Code: {{code}}",
+      "manage": "Manage",
+      "topPlayer": "Top Player",
+      "noPlayers": "No players yet",
+      "playerFallback": "Player"
+    }
+  },
+
   "host": {
     "heading": "Host",
     "mustSignIn": "Please sign in as host to control the quiz.",
@@ -76,6 +103,8 @@
       "open": "Open",
       "finished": "Finished"
     },
+    "email": "Email",
+    "forgot": "Forgot password?",
     "questionsCount": "{{count}} question",
     "questionsCount_plural": "{{count}} questions",
     "editor": { "title": "Questions" },
@@ -93,6 +122,12 @@
     }
   },
 
+  "registerHint": "By creating your account, you can access your quizzes from any device.",
+
+  "billing": {
+    "manage": "Manage subscription"
+  },
+  
   "create": {
     "title": "Setup Quiz",
     "setupTitle": "Basic settings",
