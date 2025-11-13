@@ -15,6 +15,7 @@
 
   "home.host.username": "Usuario (sin espacios)",
   "home.host.password": "Contraseña",
+  "home.host.email": "Correo electrónico",
   "home.host.errors.usernameOrPassword": "Indica un usuario (sin espacios) y una contraseña.",
   "home.host.errors.loginGeneric": "Error de inicio de sesión. Inténtalo de nuevo.",
   "home.host.errors.registerGeneric": "No se pudo crear la cuenta. Inténtalo de nuevo.",

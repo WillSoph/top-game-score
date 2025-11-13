@@ -15,6 +15,7 @@
 
   "home.host.username": "Username (no spaces)",
   "home.host.password": "Password",
+  "home.host.email": "Email",
   "home.host.errors.usernameOrPassword": "Enter a username (no spaces) and a password.",
   "home.host.errors.loginGeneric": "Login error. Please try again.",
   "home.host.errors.registerGeneric": "Could not create the account. Please try again.",
@@ -127,7 +128,7 @@
   "billing": {
     "manage": "Manage subscription"
   },
-  
+
   "create": {
     "title": "Setup Quiz",
     "setupTitle": "Basic settings",
