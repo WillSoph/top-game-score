@@ -6,9 +6,11 @@ import PlayPage from './pages/PlayPage';
 import FinishedPage from './pages/FinishedPage';
 import DashboardPage from './pages/DashboardPage';
 import SuccessPage from './pages/SuccessPage';
+import AdminPage from './pages/AdminPage';
 
 const router = createBrowserRouter([
   { path: '/', element: <Home /> },
+  { path: '/admin', element: <AdminPage /> },
   { path: '/create', element: <CreateQuizPage /> },
   { path: '/dashboard', element: <DashboardPage /> },
   { path: '/success', element: <SuccessPage /> },
