@@ -79,22 +79,24 @@ export default function CreateQuizPage() {
   }
 
   async function createGroup() {
-    if (!auth.currentUser) {
-      alert(t('create.toast.signInRequired'));
-      return;
-    }
-    // defesa extra no create (client-side): não permitir criar grupo acima do limite no free
-    if (!isPro && qCount > limit) {
-      alert(
-        t('create.limit.freeReached', {
-          defaultValue:
-            'You reached the free plan limit of {{limit}} questions. Upgrade to add more.',
-          limit,
-        })
-      );
-      return;
-    }
+  if (!auth.currentUser) {
+    alert(t('create.toast.signInRequired'));
+    return;
+  }
 
+  // defesa extra no create (client-side): não permitir criar grupo acima do limite no free
+  if (!isPro && qCount > limit) {
+    alert(
+      t('create.limit.freeReached', {
+        defaultValue:
+          'You reached the free plan limit of {{limit}} questions. Upgrade to add more.',
+        limit,
+      })
+    );
+    return;
+  }
+
+  try {
     const hostUid = auth.currentUser.uid;
     const now = Timestamp.now();
 
@@ -133,7 +135,16 @@ export default function CreateQuizPage() {
     }
 
     nav('/dashboard');
+  } catch (err: any) {
+    console.error('Erro ao criar grupo:', err);
+    alert(
+      `Erro ao criar grupo: ${
+        err?.message || 'verifique o console do navegador para mais detalhes.'
+      }`
+    );
   }
+}
+
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
