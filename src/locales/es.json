@@ -4,6 +4,7 @@
   "ttl.warning": "Este grupo y sus datos se eliminarán automáticamente en 7 días.",
 
   "home.ctaCreateQuiz": "Crear quiz",
+  "home.registerHint": "Usa un correo electrónico válido para crear tu cuenta.",
   "home.modal.title": "Elige una opción",
   "home.modal.login": "Iniciar sesión",
   "home.modal.register": "Crear cuenta",
@@ -16,13 +17,16 @@
   "home.host.username": "Usuario (sin espacios)",
   "home.host.password": "Contraseña",
   "home.host.email": "Correo electrónico",
-  "home.host.errors.usernameOrPassword": "Indica un usuario (sin espacios) y una contraseña.",
+  "home.host.forgot": "¿Olvidé mi contraseña?",
+
+  "home.host.errors.usernameOrPassword": "Ingresa usuario/correo y contraseña.",
   "home.host.errors.loginGeneric": "Error de inicio de sesión. Inténtalo de nuevo.",
   "home.host.errors.registerGeneric": "No se pudo crear la cuenta. Inténtalo de nuevo.",
   "home.host.errors.invalidCredential": "Usuario o contraseña incorrectos.",
   "home.host.errors.tooManyRequests": "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
   "home.host.errors.emailInUse": "Este nombre de usuario ya está en uso.",
   "home.host.errors.weakPassword": "La contraseña es demasiado débil. Usa una más fuerte.",
+  "home.host.errors.validEmailRequired": "Ingresa un correo válido.",
 
   "home.join.label": "Entrar con código del grupo",
   "home.join.placeholder": "código",
@@ -60,7 +64,9 @@
     "success": "Éxito",
     "warning": "Advertencia",
     "ok": "OK",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "noKeep": "Mantener suscripción",
+    "loading": "Cargando..."
   },
 
   "dashboard": {
@@ -124,7 +130,13 @@
   "registerHint": "Al crear tu cuenta, podrás acceder a tus cuestionarios desde cualquier dispositivo.",
 
   "billing": {
-    "manage": "Gestionar suscripción"
+    "manage": "Gestionar suscripción",
+    "cancel": "Cancelar suscripción",
+    "cancelDialog": {
+      "title": "Cancelar suscripción",
+      "text": "¿Estás seguro de que deseas cancelar tu suscripción? Puedes perder el acceso a las funciones premium.",
+      "confirm": "Sí, cancelar"
+    }
   },
 
   "create": {
@@ -204,5 +216,20 @@
     "redirecting": "Redirigiendo a la página de pago...",
     "error": "Ocurrió un error al iniciar el pago. Inténtalo de nuevo.",
     "footnote": "Precios en USD. Pueden aplicar impuestos."
-  }
+  },
+
+    "success": {
+      "title": "Pago confirmado · TopGameScore",
+      "description": "Tu pago se ha procesado correctamente. Ve al panel del anfitrión para gestionar tus quizzes.",
+      "heading": "¡Pago confirmado! 🎉",
+      "body": "Tu plan Pro está activo. Ahora puedes crear quizzes ilimitados y conservar tus datos sin autoeliminación.",
+      "sessionLabel": "ID de la sesión:",
+      "userLine": "Suscripción vinculada a: {{email}}",
+      "userFallback": "anfitrión",
+      "tip": "Guarda este correo: lo usarás para acceder al panel y gestionar tu suscripción.",
+      "goDashboard": "Ir al panel",
+      "goHome": "Volver al inicio",
+      "logout": "Cerrar sesión",
+      "billingNote": "Si lo necesitas, podrás gestionar o cancelar tu suscripción en el área de facturación del panel."
+    }
 }

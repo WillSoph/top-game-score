@@ -4,6 +4,7 @@
   "ttl.warning": "This group and its data will be automatically deleted in 7 days.",
 
   "home.ctaCreateQuiz": "Create quiz",
+  "home.registerHint": "Use a valid email address to create your account.",
   "home.modal.title": "Choose an option",
   "home.modal.login": "Sign in",
   "home.modal.register": "Create account",
@@ -16,13 +17,16 @@
   "home.host.username": "Username (no spaces)",
   "home.host.password": "Password",
   "home.host.email": "Email",
-  "home.host.errors.usernameOrPassword": "Enter a username (no spaces) and a password.",
+  "home.host.forgot": "Forgot password?",
+
+  "home.host.errors.usernameOrPassword": "Enter username/email and password.",
   "home.host.errors.loginGeneric": "Login error. Please try again.",
   "home.host.errors.registerGeneric": "Could not create the account. Please try again.",
   "home.host.errors.invalidCredential": "Invalid username or password.",
   "home.host.errors.tooManyRequests": "Too many attempts. Please wait and try again.",
   "home.host.errors.emailInUse": "This username is already in use.",
   "home.host.errors.weakPassword": "Password is too weak. Please choose a stronger one.",
+  "home.host.errors.validEmailRequired": "Please enter a valid email.",
 
   "home.join.label": "Join with group code",
   "home.join.placeholder": "code",
@@ -62,7 +66,9 @@
     "success": "Success",
     "warning": "Warning",
     "ok": "OK",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "noKeep": "Keep subscription",
+    "loading": "Loading..."
   },
 
   "dashboard": {
@@ -126,7 +132,13 @@
   "registerHint": "By creating your account, you can access your quizzes from any device.",
 
   "billing": {
-    "manage": "Manage subscription"
+    "manage": "Manage subscription",
+    "cancel": "Cancel subscription",
+    "cancelDialog": {
+      "title": "Cancel subscription",
+      "text": "Are you sure you want to cancel your subscription? You may lose access to premium features.",
+      "confirm": "Yes, cancel"
+    }
   },
 
   "create": {
@@ -206,5 +218,20 @@
     "redirecting": "Redirecting to the payment page...",
     "error": "An error occurred while starting checkout. Please try again.",
     "footnote": "Prices in USD. Taxes may apply."
-  }
+  },
+
+    "success": {
+      "title": "Payment confirmed · TopGameScore",
+      "description": "Your payment was processed successfully. Go to the host dashboard to manage your quizzes.",
+      "heading": "Payment confirmed! 🎉",
+      "body": "Your Pro plan is now active. You can create unlimited quizzes and keep your data without auto-deletion.",
+      "sessionLabel": "Session ID:",
+      "userLine": "Subscription linked to: {{email}}",
+      "userFallback": "host",
+      "tip": "Keep this email: it will be used to access the dashboard and manage your subscription.",
+      "goDashboard": "Go to Dashboard",
+      "goHome": "Back to home",
+      "logout": "Logout",
+      "billingNote": "If needed, you can manage or cancel your subscription in the billing area of the dashboard."
+    }
 }

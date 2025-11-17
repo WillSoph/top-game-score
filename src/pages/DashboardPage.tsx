@@ -7,6 +7,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import { useStripeUpgrade } from "../hooks/useStripeUpgrade";
+import Dialog from "../components/ui/dialog"; // ⬅️ mesmo modal usado na Home
 
 type Group = {
   id: string;
@@ -24,6 +25,10 @@ export default function DashboardPage() {
 
   const { loading: stripeLoading, openPortal } = useStripeUpgrade();
 
+  // === Dialog de confirmação de cancelamento ===
+  const [cancelDlgOpen, setCancelDlgOpen] = useState(false);
+  const [cancelDlgBusy, setCancelDlgBusy] = useState(false);
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (!u) {
@@ -36,7 +41,9 @@ export default function DashboardPage() {
         orderBy("createdAt", "desc")
       );
       const snap = await getDocs(q);
-      setGroups(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Group[]);
+      setGroups(
+        snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Group[]
+      );
     });
     return () => unsub();
   }, [nav]);
@@ -46,15 +53,46 @@ export default function DashboardPage() {
     nav("/");
   }
 
+  // Botão antigo de gerenciar assinatura (portal Stripe)
   async function handleManageSubscription() {
     if (!auth.currentUser) {
-      // aqui no futuro podemos abrir um Dialog com t('pricing.loginRequired')
+      // se quiser, você pode trocar por um Dialog depois
       return;
     }
 
-    const result = await openPortal(`${window.location.origin}/dashboard`);
-    // se quiser, pode tratar erro depois:
-    // if (!result.ok) { ... }
+    await openPortal(`${window.location.origin}/dashboard`);
+  }
+
+  // Novo: abrir modal de confirmação de cancelamento
+  function handleCancelSubscriptionClick() {
+    if (!auth.currentUser) {
+      // Se quiser mesma UX da Home, pode usar um Dialog de aviso aqui também.
+      return;
+    }
+    setCancelDlgOpen(true);
+  }
+
+  // Novo: confirmar cancelamento (redireciona pro portal Stripe)
+  async function handleConfirmCancelSubscription() {
+    if (!auth.currentUser) return;
+
+    try {
+      setCancelDlgBusy(true);
+      // A ideia é levar o usuário ao portal da Stripe,
+      // onde ele pode cancelar a assinatura.
+      const res = await openPortal(`${window.location.origin}/dashboard`);
+
+      // Se quiser tratar erro:
+      if (!res.ok) {
+        // Aqui você poderia em vez de alert, usar outro Dialog ou toast
+        alert(t("pricing.error"));
+      } else {
+        // Fechamos o modal após redirecionar (ou depois que voltar)
+        setCancelDlgOpen(false);
+      }
+    } finally {
+      setCancelDlgBusy(false);
+    }
   }
 
   return (
@@ -86,9 +124,13 @@ export default function DashboardPage() {
             aria-label={t("dashboard.actions.newQuizAria")}
             title={t("dashboard.actions.newQuizAria")}
           >
-            ➕ <span className="hidden xs:inline">{t("dashboard.actions.newQuiz")}</span>
+            ➕{" "}
+            <span className="hidden xs:inline">
+              {t("dashboard.actions.newQuiz")}
+            </span>
           </button>
 
+          {/* Gerenciar assinatura (portal Stripe) */}
           <button
             onClick={handleManageSubscription}
             disabled={stripeLoading === "portal"}
@@ -97,6 +139,16 @@ export default function DashboardPage() {
             title={t("billing.manage")}
           >
             {t("billing.manage")}
+          </button>
+
+          {/* Novo: Cancelar assinatura → abre Dialog de confirmação */}
+          <button
+            onClick={handleCancelSubscriptionClick}
+            className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 transition font-medium"
+            aria-label={t("billing.cancel")}
+            title={t("billing.cancel")}
+          >
+            {t("billing.cancel")}
           </button>
 
           <button
@@ -138,7 +190,9 @@ export default function DashboardPage() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 shadow-xl p-5 sm:p-6 text-center">
             <h3 className="font-semibold text-lg sm:text-xl text-slate-100 mb-3">
-              {t("dashboard.qr.title", { label: qrZoom.title || qrZoom.code })}
+              {t("dashboard.qr.title", {
+                label: qrZoom.title || qrZoom.code,
+              })}
             </h3>
 
             {/* Responsive QR */}
@@ -169,6 +223,46 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Dialog de confirmação de cancelamento */}
+      <Dialog
+        open={cancelDlgOpen}
+        onClose={() => {
+          if (!cancelDlgBusy) setCancelDlgOpen(false);
+        }}
+        title={t("billing.cancelDialog.title", "Cancelar assinatura")}
+        description={
+          <div className="space-y-4">
+            <p>
+              {t(
+                "billing.cancelDialog.text",
+                "Tem certeza que deseja cancelar sua assinatura? Você poderá perder acesso aos recursos premium."
+              )}
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-lg border border-slate-600 text-sm"
+                onClick={() => setCancelDlgOpen(false)}
+                disabled={cancelDlgBusy}
+              >
+                {t("common.noKeep", "Manter assinatura")}
+              </button>
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-sm text-white disabled:opacity-60"
+                onClick={handleConfirmCancelSubscription}
+                disabled={cancelDlgBusy || stripeLoading === "portal"}
+              >
+                {cancelDlgBusy || stripeLoading === "portal"
+                  ? t("common.loading", "Cancelando…")
+                  : t("billing.cancelDialog.confirm", "Sim, cancelar")}
+              </button>
+            </div>
+          </div>
+        }
+        variant="warning"
+      />
     </div>
   );
 }
@@ -195,12 +289,19 @@ function GroupCard({
       const byPlayer = new Map<string, number>();
       snap.forEach((doc) => {
         const a = doc.data() as any;
-        byPlayer.set(a.playerId, (byPlayer.get(a.playerId) ?? 0) + (a.scoreAwarded ?? 0));
+        byPlayer.set(
+          a.playerId,
+          (byPlayer.get(a.playerId) ?? 0) + (a.scoreAwarded ?? 0)
+        );
       });
       if (byPlayer.size === 0) return;
 
-      const playersSnap = await getDocs(collection(db, "groups", group.id, "players"));
-      const players = new Map(playersSnap.docs.map((d) => [d.id, d.data() as any]));
+      const playersSnap = await getDocs(
+        collection(db, "groups", group.id, "players")
+      );
+      const players = new Map(
+        playersSnap.docs.map((d) => [d.id, d.data() as any])
+      );
 
       let bestId = "";
       let bestScore = -1;
@@ -258,14 +359,20 @@ function GroupCard({
       </div>
 
       <div className="text-sm mt-2">
-        <div className="text-slate-400 mb-1">{t("dashboard.group.topPlayer")}</div>
+        <div className="text-slate-400 mb-1">
+          {t("dashboard.group.topPlayer")}
+        </div>
         {winner ? (
           <div className="flex justify-between text-slate-200">
             <span className="truncate">{winner.name}</span>
-            <span className="font-mono text-emerald-400">{winner.totalScore}</span>
+            <span className="font-mono text-emerald-400">
+              {winner.totalScore}
+            </span>
           </div>
         ) : (
-          <div className="italic text-slate-500">{t("dashboard.group.noPlayers")}</div>
+          <div className="italic text-slate-500">
+            {t("dashboard.group.noPlayers")}
+          </div>
         )}
       </div>
     </div>

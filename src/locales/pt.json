@@ -4,6 +4,7 @@
   "ttl.warning": "Este grupo e seus dados serão excluídos automaticamente em 7 dias.",
 
   "home.ctaCreateQuiz": "Criar quiz",
+  "home.registerHint": "Use um e-mail válido para criar sua conta.",
   "home.modal.title": "Escolha uma opção",
   "home.modal.login": "Entrar",
   "home.modal.register": "Criar conta",
@@ -16,12 +17,15 @@
   "home.host.username": "Nome de usuário (sem espaços)",
   "home.host.password": "Senha",
   "home.host.email": "E-mail",
-  "home.host.errors.usernameOrPassword": "Informe um nome de usuário (sem espaços) e uma senha.",
+  "home.host.forgot": "Esqueci minha senha",
+  
+  "home.host.errors.usernameOrPassword": "Informe usuário/email e senha.",
   "home.host.errors.loginGeneric": "Erro ao entrar. Tente novamente.",
   "home.host.errors.registerGeneric": "Não foi possível criar a conta. Tente novamente.",
   "home.host.errors.tooManyRequests": "Muitas tentativas de login. Aguarde um momento e tente novamente.",
   "home.host.errors.emailInUse": "Este nome de usuário já está sendo utilizado.",
   "home.host.errors.weakPassword": "A senha é muito fraca. Escolha uma senha mais forte.",
+  "home.host.errors.validEmailRequired": "Por favor, insira um e-mail válido.",
 
   "home.join.label": "Entrar com código do grupo",
   "home.join.placeholder": "código",
@@ -59,7 +63,9 @@
     "success": "Sucesso",
     "warning": "Aviso",
     "ok": "OK",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "noKeep": "Manter assinatura",
+    "loading": "Carregando..."
   },
 
   "dashboard": {
@@ -167,7 +173,13 @@
   },
 
   "billing": {
-    "manage": "Gerenciar assinatura"
+    "manage": "Gerenciar assinatura",
+    "cancel": "Cancelar assinatura",
+    "cancelDialog": {
+      "title": "Cancelar assinatura",
+      "text": "Tem certeza que deseja cancelar sua assinatura? Você poderá perder acesso aos recursos premium.",
+      "confirm": "Sim, cancelar"
+    }
   },
 
   "pricing": {
@@ -204,5 +216,20 @@
     "redirecting": "Redirecionando para a página de pagamento...",
     "error": "Ocorreu um erro ao iniciar o checkout. Tente novamente.",
     "footnote": "Preços em USD. Impostos podem ser aplicados."
+  },
+
+  "success": {
+    "title": "Pagamento confirmado · TopGameScore",
+    "description": "Seu pagamento foi processado com sucesso. Acesse o painel do host para gerenciar seus quizzes.",
+    "heading": "Pagamento confirmado! 🎉",
+    "body": "Seu plano Pro está ativo. Agora você pode criar quizzes ilimitados e manter seus dados sem autoexclusão.",
+    "sessionLabel": "ID da sessão:",
+    "userLine": "Assinatura vinculada a: {{email}}",
+    "userFallback": "host",
+    "tip": "Guarde este e-mail: ele será usado para acessar o painel e gerenciar sua assinatura.",
+    "goDashboard": "Ir para o Dashboard",
+    "goHome": "Voltar para a página inicial",
+    "logout": "Sair",
+    "billingNote": "Se precisar, você poderá gerenciar ou cancelar sua assinatura na área de cobrança do painel."
   }
 }

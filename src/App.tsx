@@ -5,11 +5,14 @@ import HostPage from './pages/HostPage';
 import PlayPage from './pages/PlayPage';
 import FinishedPage from './pages/FinishedPage';
 import DashboardPage from './pages/DashboardPage';
+import SuccessPage from './pages/SuccessPage';
 
 const router = createBrowserRouter([
   { path: '/', element: <Home /> },
   { path: '/create', element: <CreateQuizPage /> },
   { path: '/dashboard', element: <DashboardPage /> },
+  { path: '/success', element: <SuccessPage /> },
+  
   { path: '/host/:groupId', element: <HostPage /> },
   { path: '/play/:groupId', element: <PlayPage /> },
   { path: '/finished/:groupId', element: <FinishedPage /> },
