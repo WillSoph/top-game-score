@@ -16,6 +16,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import Dialog from "../components/ui/dialog";
@@ -186,59 +187,68 @@ export default function AdminPage() {
   // Setup inicial do admin
   // ============================
   async function handleSetupAdmin(e: React.FormEvent) {
-    e.preventDefault();
-    setFormError(null);
+  e.preventDefault();
+  setFormError(null);
 
-    if (!setupName.trim() || !setupEmail.trim() || !setupPassword.trim()) {
-      setFormError("Preencha nome, email e senha.");
-      return;
-    }
+  const name = setupName.trim();
+  const email = setupEmail.trim();
+  const password = setupPassword;
 
-    setBusy(true);
-    try {
-      const cred = await createUserWithEmailAndPassword(
-        auth,
-        setupEmail.trim(),
-        setupPassword
-      );
-
-      await updateProfile(cred.user, {
-        displayName: setupName.trim(),
-      });
-
-      await Promise.all([
-        // grava config do admin
-        (async () => {
-          await import("firebase/firestore").then(({ setDoc }) =>
-            setDoc(
-              doc(db, "config", "admin"),
-              {
-                adminUid: cred.user.uid,
-                name: setupName.trim(),
-                email: setupEmail.trim(),
-                createdAt: serverTimestamp(),
-              },
-              { merge: true }
-            )
-          );
-        })(),
-      ]);
-
-      setAdminConfig({
-        adminUid: cred.user.uid,
-        name: setupName.trim(),
-        email: setupEmail.trim(),
-      });
-
-      openDialog("Sucesso", "Usuário admin criado com sucesso.", "success");
-      setMode("dashboard");
-    } catch (err: any) {
-      console.error("handleSetupAdmin error", err);
-      setFormError(err?.message || "Erro ao criar admin.");
-    } finally {
-      setBusy(false);
-    }
+  if (!name || !email || !password) {
+    setFormError("Preencha nome, email e senha.");
+    return;
   }
+
+  setBusy(true);
+  try {
+    // 1) Cria o usuário admin
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+    // 2) Atualiza o displayName (só estética)
+    await updateProfile(cred.user, { displayName: name });
+
+    // 3) Grava o doc config/admin no Firestore
+    await setDoc(
+      doc(db, "config", "admin"),
+      {
+        adminUid: cred.user.uid,
+        name,
+        email,
+        createdAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    // 4) Atualiza estado local e muda para dashboard
+    setAdminConfig({
+      adminUid: cred.user.uid,
+      name,
+      email,
+    });
+
+    openDialog("Sucesso", "Usuário admin criado com sucesso.", "success");
+    setMode("dashboard");
+  } catch (err: any) {
+    console.error("handleSetupAdmin error", err);
+
+    // Mostra mensagem amigável
+    if (err?.code === "auth/email-already-in-use") {
+      setFormError("Este email já está em uso. Use outro email ou faça login.");
+    } else if (
+      typeof err?.message === "string" &&
+      err.message.includes("Missing or insufficient permissions")
+    ) {
+      setFormError(
+        "Permissão insuficiente para gravar em /config/admin. Verifique as regras do Firestore."
+      );
+    } else {
+      setFormError(err?.message || "Erro ao criar admin.");
+    }
+  } finally {
+    setBusy(false);
+  }
+}
+
 
   // ============================
   // Login do admin
