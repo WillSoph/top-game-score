@@ -35,3 +35,13 @@ export async function createBillingPortal(opts: {
     opts.idToken
   );
 }
+
+export async function cancelSubscription(opts: {
+  idToken: string;
+}): Promise<{ ok: boolean; current_period_end?: number }> {
+  return callFn<{ ok: boolean; current_period_end?: number }>(
+    'subscription-cancel',
+    {},
+    opts.idToken
+  );
+}

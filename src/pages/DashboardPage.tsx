@@ -23,7 +23,7 @@ export default function DashboardPage() {
   const [qrZoom, setQrZoom] = useState<Group | null>(null);
   const playBase = `${window.location.origin}/play/`;
 
-  const { loading: stripeLoading, openPortal } = useStripeUpgrade();
+  const { loading: stripeLoading, cancelSubscription } = useStripeUpgrade();
 
   // === Dialog de confirmação de cancelamento ===
   const [cancelDlgOpen, setCancelDlgOpen] = useState(false);
@@ -54,14 +54,14 @@ export default function DashboardPage() {
   }
 
   // Botão antigo de gerenciar assinatura (portal Stripe)
-  async function handleManageSubscription() {
-    if (!auth.currentUser) {
-      // se quiser, você pode trocar por um Dialog depois
-      return;
-    }
+  // async function handleManageSubscription() {
+  //   if (!auth.currentUser) {
+  //     // se quiser, você pode trocar por um Dialog depois
+  //     return;
+  //   }
 
-    await openPortal(`${window.location.origin}/dashboard`);
-  }
+  //   await openPortal(`${window.location.origin}/dashboard`);
+  // }
 
   // Novo: abrir modal de confirmação de cancelamento
   function handleCancelSubscriptionClick() {
@@ -76,20 +76,33 @@ export default function DashboardPage() {
   async function handleConfirmCancelSubscription() {
     if (!auth.currentUser) return;
 
+    setCancelDlgBusy(true);
     try {
-      setCancelDlgBusy(true);
-      // A ideia é levar o usuário ao portal da Stripe,
-      // onde ele pode cancelar a assinatura.
-      const res = await openPortal(`${window.location.origin}/dashboard`);
+      const res = await cancelSubscription();
 
-      // Se quiser tratar erro:
       if (!res.ok) {
-        // Aqui você poderia em vez de alert, usar outro Dialog ou toast
-        alert(t("pricing.error"));
-      } else {
-        // Fechamos o modal após redirecionar (ou depois que voltar)
-        setCancelDlgOpen(false);
+        // Você pode usar o mesmo Dialog global da Home no futuro;
+        // por enquanto, algo simples:
+        alert(t('pricing.error'));
+        return;
       }
+
+      // Se quiser usar a data de fim do período:
+      // if (res.currentPeriodEnd) {
+      //   const endDate = new Date(res.currentPeriodEnd * 1000);
+      //   console.log('Premium até:', endDate);
+      // }
+
+      // Aqui entra exatamente a mensagem que você pediu:
+      // "Assinatura cancelada. Você poderá continuar usufruindo do serviço premium até a data do vencimento."
+      alert(
+        t(
+          'billing.cancelDialog.success',
+          'Assinatura cancelada. Você poderá continuar usufruindo do serviço premium até o fim do período atual.'
+        )
+      );
+
+      setCancelDlgOpen(false);
     } finally {
       setCancelDlgBusy(false);
     }
@@ -131,7 +144,7 @@ export default function DashboardPage() {
           </button>
 
           {/* Gerenciar assinatura (portal Stripe) */}
-          <button
+          {/* <button
             onClick={handleManageSubscription}
             disabled={stripeLoading === "portal"}
             className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 transition font-medium"
@@ -139,7 +152,7 @@ export default function DashboardPage() {
             title={t("billing.manage")}
           >
             {t("billing.manage")}
-          </button>
+          </button> */}
 
           {/* Novo: Cancelar assinatura → abre Dialog de confirmação */}
           <button
@@ -236,7 +249,7 @@ export default function DashboardPage() {
             <p>
               {t(
                 "billing.cancelDialog.text",
-                "Tem certeza que deseja cancelar sua assinatura? Você poderá perder acesso aos recursos premium."
+                "Ao cancelar, sua assinatura será encerrada ao fim do período atual. Até lá, você continuará com acesso premium."
               )}
             </p>
             <div className="flex justify-end gap-2 pt-2">
