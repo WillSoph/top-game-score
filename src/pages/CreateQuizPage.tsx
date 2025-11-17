@@ -97,8 +97,15 @@ export default function CreateQuizPage() {
   }
 
   try {
-    const hostUid = auth.currentUser.uid;
+    const user = auth.currentUser;
+    const hostUid = user.uid;
     const now = Timestamp.now();
+
+    // Nome e email do host (para mostrar no admin)
+    const hostEmail = user.email ?? null;
+    const hostName =
+      user.displayName ||
+      (hostEmail ? hostEmail.split('@')[0] : null);
 
     // Plano free: expira em 7 dias; Pro: sem expiração (null)
     const expiresAt = isPro
@@ -108,6 +115,8 @@ export default function CreateQuizPage() {
     // Criação do grupo
     const ref = await addDoc(collection(db, 'groups'), {
       hostUid,
+      hostName,
+      hostEmail,
       code: '',
       title: title || 'Quiz',
       createdAt: serverTimestamp(),
@@ -118,7 +127,7 @@ export default function CreateQuizPage() {
       roundStartedAt: null,
       maxTimeSec: Number(maxTimeSec) || 20,
       locale: language,
-      plan: isPro ? 'pro' : 'free', // opcional: salva o plano vigente no momento da criação
+      plan: isPro ? 'pro' : 'free', // salva o plano vigente
     });
 
     // código = id do grupo
@@ -144,6 +153,7 @@ export default function CreateQuizPage() {
     );
   }
 }
+
 
 
   return (

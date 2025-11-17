@@ -33,9 +33,9 @@ type GroupAdminView = {
   title: string;
   code: string;
   hostUid: string;
-  hostName?: string;
-  hostEmail?: string;
-  billingPlan?: "free" | "pro";
+  hostName?: string | null;
+  hostEmail?: string | null;
+  plan?: "free" | "pro";
   createdAt?: Date | null;
 };
 
@@ -87,7 +87,7 @@ export default function AdminPage() {
   }
 
   // ============================
-  // Inicialização: auth + admin config
+  // Auth listener
   // ============================
 
   useEffect(() => {
@@ -96,6 +96,10 @@ export default function AdminPage() {
     });
     return () => unsub();
   }, []);
+
+  // ============================
+  // Carrega config/admin
+  // ============================
 
   useEffect(() => {
     async function loadAdminConfig() {
@@ -109,19 +113,23 @@ export default function AdminPage() {
             email: data.email,
           });
         } else {
+          console.log("[admin] config/admin ainda não existe");
           setAdminConfig(null);
         }
       } catch (err) {
-        console.error("Failed to load admin config", err);
+        console.error("[admin] erro ao ler config/admin:", err);
+        setAdminConfig(null);
       }
     }
     loadAdminConfig();
   }, []);
 
-  // Decide o modo de acordo com adminConfig + currentUser
+  // ============================
+  // Decide o modo com base em adminConfig + currentUser
+  // ============================
+
   useEffect(() => {
     if (adminConfig === null) {
-      // admin ainda não configurado
       setMode("setup");
       return;
     }
@@ -136,7 +144,7 @@ export default function AdminPage() {
       return;
     }
 
-    // Usuário logado mas não é o admin → desloga por segurança
+    // usuário logado mas não é o admin → desloga por segurança
     signOut(auth).finally(() => {
       setMode("login");
     });
@@ -145,6 +153,7 @@ export default function AdminPage() {
   // ============================
   // Carregar grupos quando entrar no modo dashboard
   // ============================
+
   useEffect(() => {
     if (mode !== "dashboard") return;
     loadGroups();
@@ -158,14 +167,16 @@ export default function AdminPage() {
 
       const list: GroupAdminView[] = snap.docs.map((d) => {
         const data = d.data() as any;
+        const plan = (data.plan ?? data.billingPlan) as "free" | "pro" | undefined;
+
         return {
           id: d.id,
           title: data.title || "(sem título)",
           code: data.code,
           hostUid: data.hostUid,
-          hostName: data.hostName,
-          hostEmail: data.hostEmail,
-          billingPlan: data.billingPlan,
+          hostName: data.hostName ?? null,
+          hostEmail: data.hostEmail ?? null,
+          plan,
           createdAt: data.createdAt?.toDate?.() ?? null,
         };
       });
@@ -184,75 +195,81 @@ export default function AdminPage() {
   }
 
   // ============================
+  // Métricas para os cards
+  // ============================
+
+  const stats = useMemo(() => {
+    const total = groups.length;
+    const premium = groups.filter((g) => g.plan === "pro").length;
+    const free = total - premium;
+
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const last7days = groups.filter(
+      (g) => g.createdAt && g.createdAt.getTime() >= sevenDaysAgo
+    ).length;
+
+    return { total, premium, free, last7days };
+  }, [groups]);
+
+  // ============================
   // Setup inicial do admin
   // ============================
+
   async function handleSetupAdmin(e: React.FormEvent) {
-  e.preventDefault();
-  setFormError(null);
+    e.preventDefault();
+    setFormError(null);
 
-  const name = setupName.trim();
-  const email = setupEmail.trim();
-  const password = setupPassword;
+    const name = setupName.trim();
+    const email = setupEmail.trim();
+    const password = setupPassword;
 
-  if (!name || !email || !password) {
-    setFormError("Preencha nome, email e senha.");
-    return;
-  }
+    if (!name || !email || !password) {
+      setFormError("Preencha nome, email e senha.");
+      return;
+    }
 
-  setBusy(true);
-  try {
-    // 1) Cria o usuário admin
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    setBusy(true);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    // 2) Atualiza o displayName (só estética)
-    await updateProfile(cred.user, { displayName: name });
+      await updateProfile(cred.user, { displayName: name });
 
-    // 3) Grava o doc config/admin no Firestore
-    await setDoc(
-      doc(db, "config", "admin"),
-      {
+      await setDoc(
+        doc(db, "config", "admin"),
+        {
+          adminUid: cred.user.uid,
+          name,
+          email,
+          createdAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      setAdminConfig({
         adminUid: cred.user.uid,
         name,
         email,
-        createdAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+      });
 
-    // 4) Atualiza estado local e muda para dashboard
-    setAdminConfig({
-      adminUid: cred.user.uid,
-      name,
-      email,
-    });
-
-    openDialog("Sucesso", "Usuário admin criado com sucesso.", "success");
-    setMode("dashboard");
-  } catch (err: any) {
-    console.error("handleSetupAdmin error", err);
-
-    // Mostra mensagem amigável
-    if (err?.code === "auth/email-already-in-use") {
-      setFormError("Este email já está em uso. Use outro email ou faça login.");
-    } else if (
-      typeof err?.message === "string" &&
-      err.message.includes("Missing or insufficient permissions")
-    ) {
-      setFormError(
-        "Permissão insuficiente para gravar em /config/admin. Verifique as regras do Firestore."
-      );
-    } else {
-      setFormError(err?.message || "Erro ao criar admin.");
+      openDialog("Sucesso", "Usuário admin criado com sucesso.", "success");
+      setMode("dashboard");
+    } catch (err: any) {
+      console.error("handleSetupAdmin error", err);
+      if (err?.code === "auth/email-already-in-use") {
+        setFormError("Este email já está em uso. Use outro email ou faça login.");
+      } else {
+        setFormError(err?.message || "Erro ao criar admin.");
+      }
+    } finally {
+      setBusy(false);
     }
-  } finally {
-    setBusy(false);
   }
-}
-
 
   // ============================
   // Login do admin
   // ============================
+
   async function handleAdminLogin(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
@@ -271,7 +288,6 @@ export default function AdminPage() {
       );
 
       if (adminConfig && cred.user.uid !== adminConfig.adminUid) {
-        // não é o admin
         await signOut(auth);
         setFormError("Essas credenciais não correspondem ao usuário admin.");
         return;
@@ -289,6 +305,7 @@ export default function AdminPage() {
   // ============================
   // Logout
   // ============================
+
   async function handleLogout() {
     await signOut(auth);
     setMode("login");
@@ -297,6 +314,7 @@ export default function AdminPage() {
   // ============================
   // Exclusão de grupo
   // ============================
+
   async function confirmDeleteGroup() {
     if (!deleteTarget) return;
     setDeleteBusy(true);
@@ -467,7 +485,31 @@ export default function AdminPage() {
         {/* Dashboard admin */}
         {mode === "dashboard" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            {/* Cards de estatísticas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <StatCard
+                label="Grupos totais"
+                value={stats.total}
+                helper="Todos os grupos já criados."
+              />
+              <StatCard
+                label="Grupos premium"
+                value={stats.premium}
+                helper="Criados com plano Pro."
+              />
+              <StatCard
+                label="Grupos free"
+                value={stats.free}
+                helper="Criados no plano gratuito."
+              />
+              <StatCard
+                label="Grupos últimos 7 dias"
+                value={stats.last7days}
+                helper="Atividade recente."
+              />
+            </div>
+
+            <div className="flex items-center justify-between mt-4">
               <div>
                 <h2 className="text-lg font-semibold">Grupos criados</h2>
                 <p className="text-xs text-slate-400">
@@ -532,13 +574,13 @@ export default function AdminPage() {
                         {g.code}
                       </td>
                       <td className="px-3 py-2 border-b border-slate-900">
-                        {g.hostName || g.hostUid || "-"}
+                        {g.hostName || g.hostEmail || g.hostUid || "-"}
                       </td>
                       <td className="px-3 py-2 border-b border-slate-900 text-xs">
                         {g.hostEmail || "-"}
                       </td>
                       <td className="px-3 py-2 border-b border-slate-900">
-                        {g.billingPlan === "pro" ? "Premium" : "Free"}
+                        {g.plan === "pro" ? "Premium" : "Free"}
                       </td>
                       <td className="px-3 py-2 border-b border-slate-900 text-xs">
                         {g.createdAt
@@ -618,6 +660,28 @@ export default function AdminPage() {
         }
         variant="warning"
       />
+    </div>
+  );
+}
+
+/* ---------------------- Subcomponente de card ---------------------- */
+
+function StatCard({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: number;
+  helper?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3 shadow-sm">
+      <div className="text-xs text-slate-400 mb-1">{label}</div>
+      <div className="text-2xl font-semibold text-slate-50">{value}</div>
+      {helper && (
+        <div className="text-[11px] text-slate-500 mt-1">{helper}</div>
+      )}
     </div>
   );
 }
