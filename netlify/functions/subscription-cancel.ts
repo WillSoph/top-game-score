@@ -2,9 +2,21 @@ import type { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
 import * as admin from 'firebase-admin';
 
-// Inicializa o Firebase Admin (reaproveita se já houver app)
+// 🔐 Inicialização do Firebase Admin com service account da env var
 if (!admin.apps.length) {
-  admin.initializeApp();
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+  if (!serviceAccountJson) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT env var is not set');
+  }
+
+  const serviceAccount = JSON.parse(serviceAccountJson);
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    // forçamos o projectId pra evitar exatamente esse erro
+    projectId: serviceAccount.project_id,
+  });
 }
 
 // Inicializa Stripe com a secret key do backend
