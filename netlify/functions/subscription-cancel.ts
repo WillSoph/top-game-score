@@ -2,20 +2,23 @@ import type { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
 import * as admin from 'firebase-admin';
 
-// 🔐 Inicialização do Firebase Admin com service account da env var
+// 🔐 Inicializa Firebase Admin usando envs pequenas (sem JSON gigante)
 if (!admin.apps.length) {
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-  if (!serviceAccountJson) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT env var is not set');
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error('Missing FIREBASE_* environment variables for firebase-admin');
   }
 
-  const serviceAccount = JSON.parse(serviceAccountJson);
-
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    // forçamos o projectId pra evitar exatamente esse erro
-    projectId: serviceAccount.project_id,
+    credential: admin.credential.cert({
+      projectId,
+      clientEmail,
+      privateKey,
+    }),
+    projectId,
   });
 }
 
