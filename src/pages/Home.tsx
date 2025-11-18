@@ -267,7 +267,17 @@ export default function Home() {
 
       {/* BG */}
       <div className="min-h-screen pb-safe pt-safe bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
-        <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 md:px-8 py-5 sm:py-6 md:py-8">
+        <div className="
+  mx-auto 
+  w-full 
+  max-w-6xl 
+  px-4 
+  sm:px-6 
+  md:px-10 
+  py-5 
+  sm:py-8 
+  md:py-12
+">
           {/* Top bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
@@ -316,7 +326,7 @@ export default function Home() {
           <p className="mt-2 text-slate-300 text-sm sm:text-base">{t('home.subtitle')}</p>
 
           {/* Features */}
-          <section aria-labelledby="features" className="mt-6 grid gap-4 sm:grid-cols-2">
+          <section aria-labelledby="features" className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <FeatureCard title={t('seo.features.f1.t')} desc={t('seo.features.f1.d')} />
             <FeatureCard title={t('seo.features.f2.t')} desc={t('seo.features.f2.d')} />
             <FeatureCard title={t('seo.features.f3.t')} desc={t('seo.features.f3.d')} />
@@ -324,7 +334,7 @@ export default function Home() {
           </section>
 
           {/* Card principal (CTA + Auth) */}
-          <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm shadow-xl p-4 sm:p-6 space-y-5">
+          <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-xl shadow-2xl p-6 sm:p-8 space-y-6">
             <ButtonPrimary className="w-full" onClick={handleCreateQuizClick}>
               {t('home.ctaCreateQuiz')}
             </ButtonPrimary>
@@ -354,7 +364,7 @@ export default function Home() {
           </div>
 
           {/* Entrar como player */}
-          <div className="mt-6">
+          <div className="mt-12 rounded-xl border border-slate-800 bg-slate-900/30 p-6 shadow-lg">
             <label className="text-sm sm:text-base text-slate-300">{t('home.join.label')}</label>
             <div className="mt-2 flex flex-col xs:flex-row gap-2">
               <Input
@@ -379,12 +389,14 @@ export default function Home() {
           </div>
 
           {/* Planos */}
-          <PricingPlans
-            freeLimit={10}
-            onSelectFree={handleSelectFree}
-            onSelectPro={handleSelectPro}
-            isBusy={stripeLoading === 'checkout'}
-          />
+          <div className="mt-14 rounded-2xl border border-slate-800 bg-slate-900/30 p-8 shadow-xl">
+            <PricingPlans
+              freeLimit={10}
+              onSelectFree={handleSelectFree}
+              onSelectPro={handleSelectPro}
+              isBusy={stripeLoading === 'checkout'}
+            />
+          </div>
 
           {/* Ex.: botão opcional para abrir o portal do cliente */}
           {/* <div className="mt-3">
@@ -394,7 +406,7 @@ export default function Home() {
           </div> */}
 
           {/* FAQ visível */}
-          <section className="mt-8">
+          <section className="mt-14 rounded-xl border border-slate-800 bg-slate-900/20 p-6 sm:p-8 shadow-lg">
             <h2 className="text-xl font-semibold text-slate-100 mb-3">{t('seo.faq.title')}</h2>
             <div className="space-y-3">
               <FaqItem q={t('seo.faq.q1')} a={t('seo.faq.a1')} />

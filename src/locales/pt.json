@@ -107,6 +107,10 @@
       "open": "Aberto",
       "finished": "Finalizado"
     },
+    "toasts": {
+      "started": "Quiz iniciado com sucesso!",
+      "finished": "Quiz finalizado com sucesso!"
+    },
     "email": "E-mail",
     "forgot": "Esqueci minha senha",
     "questionsCount": "{{count}} pergunta",
@@ -169,7 +173,10 @@
     "correct": "correta",
     "addQuestion": "Adicionar pergunta",
     "remove": "remover",
-    "validation": { "incomplete": "Preencha todos os campos antes de adicionar." }
+    "validation": { "incomplete": "Preencha todos os campos antes de adicionar." },
+    "limit": {
+      "freeReached": "Você atingiu o limite de {{limit}} perguntas no plano gratuito. Faça upgrade para adicionar mais."
+    }
   },
 
   "billing": {

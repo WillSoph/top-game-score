@@ -110,6 +110,10 @@
       "open": "Open",
       "finished": "Finished"
     },
+    "toasts": {
+      "started": "Quiz started successfully!",
+      "finished": "Quiz finished successfully!"
+    },
     "email": "Email",
     "forgot": "Forgot password?",
     "questionsCount": "{{count}} question",
@@ -181,7 +185,10 @@
     "correct": "correct",
     "addQuestion": "Add Question",
     "remove": "remove",
-    "validation": { "incomplete": "Please fill out all fields before adding." }
+    "validation": { "incomplete": "Please fill out all fields before adding." },
+    "limit": {
+      "freeReached": "You reached the free plan limit of {{limit}} questions. Upgrade to add more."
+    }
   },
 
   "pricing": {
