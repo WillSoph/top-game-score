@@ -2,15 +2,12 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+
+type Plan = 'free' | 'pro';
 
 type PlanState = {
-  plan: 'free' | 'pro';
+  plan: Plan;
   active: boolean;
   loading: boolean;
 };
@@ -23,38 +20,60 @@ export function useUserPlan(): PlanState {
   });
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    // observa login / logout
+    const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         setState({ plan: 'free', active: false, loading: false });
         return;
       }
 
+      const userRef = doc(db, 'users', user.uid);
+
+      // tenta ler uma vez (pra não ficar carregando infinito)
       try {
-        // Ajuste o caminho se você estiver usando outro:
-        // ex: collection(db, 'users', user.uid, 'subscriptions')
-        const subsRef = collection(db, 'customers', user.uid, 'subscriptions');
-
-        const q = query(
-          subsRef,
-          where('status', 'in', ['trialing', 'active'])
-        );
-
-        const snap = await getDocs(q);
-
-        if (!snap.empty) {
-          // Tem pelo menos 1 assinatura ativa / em trial → PRO
-          setState({ plan: 'pro', active: true, loading: false });
-        } else {
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) {
+          // se ainda não existir doc, considera free
           setState({ plan: 'free', active: false, loading: false });
+        } else {
+          const data = snap.data() as any;
+          const plan: Plan = data.plan === 'pro' ? 'pro' : 'free';
+          const active = Boolean(data.active);
+
+          setState({ plan, active, loading: false });
         }
-      } catch (e) {
-        console.error('useUserPlan error', e);
-        // Em caso de erro, consideramos free para não bloquear o app
+      } catch (err) {
+        console.error('useUserPlan initial read error', err);
         setState({ plan: 'free', active: false, loading: false });
       }
+
+      // assina em tempo real para refletir updates do webhook
+      const unsubDoc = onSnapshot(
+        userRef,
+        (snap) => {
+          if (!snap.exists()) {
+            setState((prev) => ({ ...prev, plan: 'free', active: false, loading: false }));
+          } else {
+            const data = snap.data() as any;
+            const plan: Plan = data.plan === 'pro' ? 'pro' : 'free';
+            const active = Boolean(data.active);
+
+            setState({ plan, active, loading: false });
+          }
+        },
+        (error) => {
+          console.error('useUserPlan onSnapshot error', error);
+        }
+      );
+
+      return () => {
+        unsubDoc();
+      };
     });
 
-    return () => unsub();
+    return () => {
+      unsubAuth();
+    };
   }, []);
 
   return state;
