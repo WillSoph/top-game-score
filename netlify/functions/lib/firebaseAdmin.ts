@@ -8,7 +8,7 @@ type SA = {
 };
 
 function getServiceAccount(): SA {
-  const project_id = process.env.FIREBASE_PROJECT_ID;
+  const project_id = process.env.VITE_FIREBASE_PROJECT_ID;
   const client_email = process.env.FIREBASE_CLIENT_EMAIL;
   const private_key_raw = process.env.FIREBASE_PRIVATE_KEY;
 
