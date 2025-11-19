@@ -31,6 +31,10 @@
   "home.join.label": "Entrar con código del grupo",
   "home.join.placeholder": "código",
   "home.join.button": "Entrar",
+  "join.name": "Tu nombre",
+  "join.handle": "Tu identificador",
+  "common.join": "Entrar",
+  "common.joined": "Entró",
 
   "brand": "TopGameScore",
   "seo": {
@@ -69,6 +73,10 @@
     "loading": "Cargando..."
   },
 
+  "play": {
+    "title": "Jugar"
+  },
+
   "dashboard": {
     "actions": {
       "newQuiz": "Nuevo Quiz",
@@ -92,7 +100,8 @@
       "manage": "Administrar",
       "topPlayer": "Mejor Jugador",
       "noPlayers": "Aún no hay jugadores",
-      "playerFallback": "Jugador"
+      "playerFallback": "Jugador",
+      "shareLinkToStart": "Comparte el enlace de acceso para comenzar"
     }
   },
 

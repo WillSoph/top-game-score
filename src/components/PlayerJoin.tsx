@@ -1,6 +1,7 @@
 import { doc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db, ensureAnonAuth } from '../lib/firebase';
 import { useEffect, useState } from 'react';
+import { t } from 'i18next';
 
 type Props = {
   groupId: string;
@@ -68,14 +69,14 @@ export default function PlayerJoin({ groupId, onJoined }: Props) {
     <div className="space-y-2">
       <input
         className="w-full px-3 py-2 rounded bg-slate-800"
-        placeholder="Your name"
+        placeholder={t('join.name')}
         value={name}
         onChange={(e) => setName(e.target.value)}
         disabled={loading || joined}
       />
       <input
         className="w-full px-3 py-2 rounded bg-slate-800"
-        placeholder="@social (required)"
+        placeholder={`@social (${t('join.handle')})`}
         value={handle}
         onChange={(e) => setHandle(e.target.value)}
         disabled={loading || joined}
@@ -85,7 +86,7 @@ export default function PlayerJoin({ groupId, onJoined }: Props) {
         disabled={loading || joined}
         className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50"
       >
-        {joined ? 'Joined' : (loading ? 'Joining…' : 'Join')}
+        {joined ? `${t('common.joined')}` : (loading ? '…' : `${t('common.join')}`)}
       </button>
     </div>
   );

@@ -13,6 +13,10 @@
   "home.usernameHint": "Seu nome de usuário vira um e-mail interno (usuario@host.local). Sem espaços.",
   "common.dashboard": "Painel",
   "common.back": "Voltar",
+  "join.name": "Seu nome",
+  "join.handle": "Seu identificador",
+  "common.join": "Entrar", 
+  "common.joined": "Entrou", 
 
   "home.host.username": "Nome de usuário (sem espaços)",
   "home.host.password": "Senha",
@@ -68,6 +72,10 @@
     "loading": "Carregando..."
   },
 
+  "play": {
+    "title": "Jogar"
+  },
+
   "dashboard": {
     "actions": {
       "newQuiz": "Novo Quiz",
@@ -91,7 +99,8 @@
       "manage": "Gerenciar",
       "topPlayer": "Melhor Jogador",
       "noPlayers": "Ainda não há jogadores",
-      "playerFallback": "Jogador"
+      "playerFallback": "Jogador",
+      "shareLinkToStart": "Compartilhe o link de entrada para começar"
     }
   },
 

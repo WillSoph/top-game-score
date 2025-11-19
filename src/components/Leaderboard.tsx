@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { Trophy, Crown } from "lucide-react";
 
 type Player = {
@@ -37,8 +38,8 @@ export default function Leaderboard({ players }: { players: Player[] }) {
       {/* Empty state */}
       {!sorted.length && (
         <div className="rounded-lg border border-dashed border-slate-800 p-6 text-center">
-          <p className="text-sm text-slate-400">No players yet</p>
-          <p className="text-xs text-slate-500">Share the join link to start</p>
+          <p className="text-sm text-slate-400">{t("dashboard.group.noPlayers")}</p>
+          <p className="text-xs text-slate-500">{t("dashboard.group.shareLinkToStart")}</p>
         </div>
       )}
 

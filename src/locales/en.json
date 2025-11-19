@@ -33,6 +33,8 @@
   "home.join.button": "Join",
   "join.name": "Your name",
   "join.handle": "Your handle",
+  "common.join": "Join",
+  "common.joined": "Joined",
 
   "brand": "TopGameScore",
   "seo": {
@@ -71,6 +73,10 @@
     "loading": "Loading..."
   },
 
+  "play": {
+    "title": "Play"
+  },
+
   "dashboard": {
     "actions": {
       "newQuiz": "New Quiz",
@@ -94,7 +100,8 @@
       "manage": "Manage",
       "topPlayer": "Top Player",
       "noPlayers": "No players yet",
-      "playerFallback": "Player"
+      "playerFallback": "Player",
+      "shareLinkToStart": "Share the join link to start"
     }
   },
 
