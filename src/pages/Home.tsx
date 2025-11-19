@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -51,6 +51,9 @@ export default function Home() {
   const [dlgMsg, setDlgMsg] = useState<React.ReactNode>('');
   const [dlgVariant, setDlgVariant] = useState<'info' | 'success' | 'warning' | 'danger'>('info');
 
+  // ref para a seção de autenticação (card principal)
+  const authSectionRef = useRef<HTMLDivElement | null>(null);
+
   function openDialog(
     title: string,
     msg: React.ReactNode,
@@ -79,6 +82,19 @@ export default function Home() {
       return;
     }
     setAuthStep('choose');
+    // rola para o card de auth também, para já ver as opções
+    if (authSectionRef.current) {
+      authSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // handler para "Entrar" no topo
+  function handleTopLoginClick() {
+    setAuthStep('login');
+    // scroll suave até o card de autenticação
+    if (authSectionRef.current) {
+      authSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   /* ===========================
@@ -267,17 +283,19 @@ export default function Home() {
 
       {/* BG */}
       <div className="min-h-screen pb-safe pt-safe bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
-        <div className="
-  mx-auto 
-  w-full 
-  max-w-6xl 
-  px-4 
-  sm:px-6 
-  md:px-10 
-  py-5 
-  sm:py-8 
-  md:py-12
-">
+        <div
+          className="
+            mx-auto 
+            w-full 
+            max-w-6xl 
+            px-4 
+            sm:px-6 
+            md:px-10 
+            py-5 
+            sm:py-8 
+            md:py-12
+          "
+        >
           {/* Top bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
@@ -297,7 +315,9 @@ export default function Home() {
                   <span className="truncate text-sm">{hostName}</span>
                 </button>
               ) : (
-                <ButtonSecondary onClick={() => setAuthStep('login')}>{t('home.modal.login')}</ButtonSecondary>
+                <ButtonSecondary onClick={handleTopLoginClick}>
+                  {t('home.modal.login')}
+                </ButtonSecondary>
               )}
             </div>
 
@@ -316,17 +336,24 @@ export default function Home() {
                   </span>
                 </button>
               ) : (
-                <ButtonSecondary onClick={() => setAuthStep('login')}>{t('home.modal.login')}</ButtonSecondary>
+                <ButtonSecondary onClick={handleTopLoginClick}>
+                  {t('home.modal.login')}
+                </ButtonSecondary>
               )}
             </div>
           </div>
 
           {/* H2 + subtitle */}
-          <h2 className="mt-3 text-lg sm:text-xl font-semibold text-slate-100">{t('seo.h2')}</h2>
+          <h2 className="mt-3 text-lg sm:text-xl font-semibold text-slate-100">
+            {t('seo.h2')}
+          </h2>
           <p className="mt-2 text-slate-300 text-sm sm:text-base">{t('home.subtitle')}</p>
 
           {/* Features */}
-          <section aria-labelledby="features" className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <section
+            aria-labelledby="features"
+            className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          >
             <FeatureCard title={t('seo.features.f1.t')} desc={t('seo.features.f1.d')} />
             <FeatureCard title={t('seo.features.f2.t')} desc={t('seo.features.f2.d')} />
             <FeatureCard title={t('seo.features.f3.t')} desc={t('seo.features.f3.d')} />
@@ -334,7 +361,10 @@ export default function Home() {
           </section>
 
           {/* Card principal (CTA + Auth) */}
-          <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-xl shadow-2xl p-6 sm:p-8 space-y-6">
+          <div
+            ref={authSectionRef}
+            className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-xl shadow-2xl p-6 sm:p-8 space-y-6"
+          >
             <ButtonPrimary className="w-full" onClick={handleCreateQuizClick}>
               {t('home.ctaCreateQuiz')}
             </ButtonPrimary>
@@ -365,7 +395,9 @@ export default function Home() {
 
           {/* Entrar como player */}
           <div className="mt-12 rounded-xl border border-slate-800 bg-slate-900/30 p-6 shadow-lg">
-            <label className="text-sm sm:text-base text-slate-300">{t('home.join.label')}</label>
+            <label className="text-sm sm:text-base text-slate-300">
+              {t('home.join.label')}
+            </label>
             <div className="mt-2 flex flex-col xs:flex-row gap-2">
               <Input
                 value={joinCode}
@@ -398,16 +430,11 @@ export default function Home() {
             />
           </div>
 
-          {/* Ex.: botão opcional para abrir o portal do cliente */}
-          {/* <div className="mt-3">
-            <ButtonSecondary disabled={stripeLoading === 'portal'} onClick={handleManageSubscription}>
-              {stripeLoading === 'portal' ? '…' : t('pricing.manageSubscription')}
-            </ButtonSecondary>
-          </div> */}
-
           {/* FAQ visível */}
           <section className="mt-14 rounded-xl border border-slate-800 bg-slate-900/20 p-6 sm:p-8 shadow-lg">
-            <h2 className="text-xl font-semibold text-slate-100 mb-3">{t('seo.faq.title')}</h2>
+            <h2 className="text-xl font-semibold text-slate-100 mb-3">
+              {t('seo.faq.title')}
+            </h2>
             <div className="space-y-3">
               <FaqItem q={t('seo.faq.q1')} a={t('seo.faq.a1')} />
               <FaqItem q={t('seo.faq.q2')} a={t('seo.faq.a2')} />
@@ -418,7 +445,13 @@ export default function Home() {
       </div>
 
       {/* Dialog global */}
-      <Dialog open={dlgOpen} onClose={() => setDlgOpen(false)} title={dlgTitle} description={dlgMsg} variant={dlgVariant} />
+      <Dialog
+        open={dlgOpen}
+        onClose={() => setDlgOpen(false)}
+        title={dlgTitle}
+        description={dlgMsg}
+        variant={dlgVariant}
+      />
 
       <Footer />
     </>
