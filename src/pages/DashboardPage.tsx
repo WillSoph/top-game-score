@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [qrZoom, setQrZoom] = useState<Group | null>(null);
   const playBase = `${window.location.origin}/play/`;
+  const hostBase = `${window.location.origin}/host/`;
 
   const { loading: stripeLoading, cancelSubscription } = useStripeUpgrade();
   const { plan, active } = useUserPlan();

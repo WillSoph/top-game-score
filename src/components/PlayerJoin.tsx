@@ -87,9 +87,6 @@ export default function PlayerJoin({ groupId, onJoined }: Props) {
       >
         {joined ? 'Joined' : (loading ? 'Joining…' : 'Join')}
       </button>
-      <p className="text-xs text-amber-300/90 border border-amber-500/30 rounded p-3 mt-2">
-        ⚠️ This group and its data will be automatically deleted in 7 days.
-      </p>
     </div>
   );
 }
