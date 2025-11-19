@@ -243,9 +243,9 @@ export default function PlayPage() {
           onClick={() => history.back()}
           className="text-sm text-slate-400"
         >
-          ← Back
+          ← {t('common.back')}
         </button>
-        <h1 className="text-2xl font-bold">Play</h1>
+        <h1 className="text-2xl font-bold">{t('play.title', 'Play')}</h1>
 
         {!joined ? (
           <PlayerJoin groupId={groupId!} onJoined={onJoined} />
@@ -257,7 +257,7 @@ export default function PlayPage() {
             className="border-t border-slate-800 pt-4"
           >
             <h2 className="text-xl font-semibold mb-4 text-center">
-              🏆 Final Ranking
+              🏆 {t('play.finalRanking', 'Final Ranking')}
             </h2>
             <ul className="space-y-2">
               {sortedPlayers.map((p, idx) => (
@@ -283,7 +283,10 @@ export default function PlayPage() {
           </motion.div>
         ) : group?.status !== 'open' ? (
           <div className="text-slate-400">
-            Waiting for the host to open the quiz…
+            {t(
+              'play.waitingHost',
+              'Waiting for the host to open the quiz…'
+            )}
           </div>
         ) : (
           <div className="border-t border-slate-800 pt-4 overflow-hidden">
@@ -298,6 +301,7 @@ export default function PlayPage() {
                 <LiveQuestion
                   q={currentQuestion}
                   onChoose={submit}
+                  onTimeout={handleTimeoutNoAnswer}
                   roundStartedAt={{
                     toMillis: () => roundStart ?? Date.now(),
                   }}

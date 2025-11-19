@@ -12,7 +12,7 @@ import {
   setDoc,
   getDoc,
   updateDoc,
-  increment
+  increment,
 } from 'firebase/firestore';
 import { auth, db, ensureAnonAuth } from '../lib/firebase';
 import { Helmet } from 'react-helmet-async';
@@ -33,14 +33,9 @@ export default function PlayPage() {
   const [roundStart, setRoundStart] = useState<number | null>(null);
   const [showRanking, setShowRanking] = useState(false);
 
-  // novo controle para evitar múltiplos envios
-  const [hasAnswered, setHasAnswered] = useState(false);
-
-  // se o host finalizar → mostrar ranking
+  // se o host finalizar, vai pra tela final
   useEffect(() => {
-    if (group?.status === 'finished') {
-      setShowRanking(true);
-    }
+    if (group?.status === 'finished') setShowRanking(true);
   }, [group?.status]);
 
   // Se o usuário já estava cadastrado (reload)
@@ -49,45 +44,62 @@ export default function PlayPage() {
       await ensureAnonAuth();
       const uid = auth.currentUser?.uid;
       if (!uid || !groupId) return;
-
       const p = players.find((p) => p.id === uid);
       if (p && !joined) {
         setJoined(true);
         setMyQIndex(0);
         setRoundStart(Date.now());
-        setHasAnswered(false);
       }
     })();
-  }, [players, groupId]);
+  }, [players, groupId, joined]);
 
   function onJoined() {
     setJoined(true);
     setMyQIndex(0);
     setRoundStart(Date.now());
-    setHasAnswered(false);
   }
 
   const currentQuestion = useMemo(() => {
     return questions[myQIndex] ?? null;
   }, [questions, myQIndex]);
 
-  // ===========================
-  //   ENVIAR RESPOSTA NORMAL
-  // ===========================
+  /**
+   * Quando o tempo acaba e o player NÃO respondeu:
+   * - não pontua
+   * - só avança para a próxima pergunta
+   * - se for a última, mostra ranking
+   */
+  function handleTimeoutNoAnswer() {
+    if (!currentQuestion || !group) return;
+
+    // se já respondeu, ignora o timeout (pra não duplicar avanço)
+    if (answeredIndex !== null) return;
+
+    const qIndex = myQIndex;
+    const next = qIndex + 1;
+
+    if (next < questions.length) {
+      setMyQIndex(next);
+      setRoundStart(Date.now());
+      setAnsweredIndex(null);
+    } else {
+      setShowRanking(true);
+    }
+  }
+
   async function submit(i: number) {
-    if (!currentQuestion || !group || hasAnswered) return;
+    if (!currentQuestion || !group) return;
     try {
       await ensureAnonAuth();
       const uid = auth.currentUser!.uid;
 
+      if (answeredIndex !== null) return;
       setAnsweredIndex(i);
-      setHasAnswered(true);
 
       const gSnap = await getDoc(doc(db, 'groups', groupId!));
       const g = gSnap.data() as any;
       if (g?.status !== 'open') {
         setAnsweredIndex(null);
-        setHasAnswered(false);
         alert('Quiz is closed.');
         return;
       }
@@ -101,7 +113,6 @@ export default function PlayPage() {
       const bonus = correct
         ? Math.max(0, Math.round(500 * (1 - elapsedMs / maxMs)))
         : 0;
-
       const scoreAwarded = correct ? base + bonus : 0;
 
       const qIndex = Number(myQIndex);
@@ -116,99 +127,40 @@ export default function PlayPage() {
           correct,
           elapsedMs,
           scoreAwarded,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
         },
-        { merge: true }
+        { merge: false }
       );
 
       if (scoreAwarded > 0) {
         await updateDoc(doc(db, 'groups', groupId!, 'players', uid), {
-          totalScore: increment(scoreAwarded)
+          totalScore: increment(scoreAwarded),
         });
       }
 
-      handleNextQuestion();
+      const next = qIndex + 1;
+      if (next < questions.length) {
+        setTimeout(() => {
+          setMyQIndex(next);
+          setRoundStart(Date.now());
+          setAnsweredIndex(null);
+        }, 400);
+      } else {
+        setShowRanking(true);
+      }
     } catch (e: any) {
       console.error('submit error', e);
       alert(`Failed to submit answer: ${e?.code || 'unknown'}`);
       setAnsweredIndex(null);
-      setHasAnswered(false);
     }
   }
 
-  // ===========================
-  //  AUTO-RESPOSTA COM 0 PONTOS
-  // ===========================
-  async function handleTimeoutNoAnswer() {
-    if (!currentQuestion || !group) return;
-    if (hasAnswered) return; // evita duplicação
-
-    try {
-      await ensureAnonAuth();
-      const uid = auth.currentUser!.uid;
-      const qIndex = Number(myQIndex);
-      const answerId = `${uid}_${qIndex}`;
-
-      await setDoc(
-        doc(db, 'groups', groupId!, 'answers', answerId),
-        {
-          playerId: uid,
-          qIndex,
-          chosenIndex: null,
-          correct: false,
-          elapsedMs: null,
-          scoreAwarded: 0,
-          createdAt: serverTimestamp()
-        },
-        { merge: true }
-      );
-
-      setHasAnswered(true);
-      handleNextQuestion();
-    } catch (e) {
-      console.error('timeout answer error', e);
-    }
-  }
-
-  // ===========================
-  //   CALCULO DO TEMPO RESTANTE
-  // ===========================
-  const timeLeft = useMemo(() => {
-    if (!roundStart || !group) return null;
-    const max = ((group as any)?.maxTimeSec ?? 20) * 1000;
-    return Math.max(0, max - (Date.now() - roundStart));
-  }, [roundStart, group, myQIndex]);
-
-  // dispara auto-resposta quando zera
-  useEffect(() => {
-    if (timeLeft === null) return;
-    if (timeLeft <= 0) {
-      handleTimeoutNoAnswer();
-    }
-  }, [timeLeft]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ===========================
-  //   IR PARA A PRÓXIMA QUESTÃO
-  // ===========================
-  function handleNextQuestion() {
-    const next = myQIndex + 1;
-
-    if (next < questions.length) {
-      setTimeout(() => {
-        setMyQIndex(next);
-        setRoundStart(Date.now());
-        setAnsweredIndex(null);
-        setHasAnswered(false);
-      }, 400);
-    } else {
-      setShowRanking(true);
-    }
-  }
-
-  // Ranking final
+  // ranking dos jogadores
   const sortedPlayers = [...players].sort(
     (a, b) => b.totalScore - a.totalScore
   );
+
+  const siteUrl = import.meta.env.VITE_SITE_URL;
 
   return (
     <>
@@ -217,81 +169,90 @@ export default function PlayPage() {
         <meta name="description" content={t('seo.description')} />
         <link
           rel="canonical"
-          href={`${import.meta.env.VITE_SITE_URL}/play/${groupId}`}
+          href={`${siteUrl}/play/${groupId}`}
         />
         <meta name="robots" content="noindex,follow" />
       </Helmet>
 
-      <div className="max-w-3xl mx-auto p-6 space-y-6">
-        <button
-          onClick={() => history.back()}
-          className="text-sm text-slate-400"
-        >
-          ← Back
-        </button>
-        <h1 className="text-2xl font-bold">Play</h1>
-
-        {!joined ? (
-          <PlayerJoin groupId={groupId!} onJoined={onJoined} />
-        ) : showRanking ? (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="border-t border-slate-800 pt-4"
+      <div className="min-h-screen pb-safe pt-safe bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-5 sm:py-6 md:py-8 space-y-6">
+          <button
+            onClick={() => history.back()}
+            className="text-sm text-slate-300 hover:text-white transition"
           >
-            <h2 className="text-xl font-semibold mb-4 text-center">
-              🏆 Final Ranking
-            </h2>
-            <ul className="space-y-2">
-              {sortedPlayers.map((p, idx) => (
-                <li
-                  key={p.id}
-                  className={`flex justify-between px-4 py-2 rounded ${
-                    idx === 0
-                      ? 'bg-yellow-500 text-black font-bold'
-                      : idx === 1
-                      ? 'bg-gray-300 text-black font-semibold'
-                      : idx === 2
-                      ? 'bg-amber-700 text-white font-semibold'
-                      : 'bg-slate-800 text-white'
-                  }`}
+            ← {t('common.back')}
+          </button>
+
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100">
+            {t('play.title', 'Play')}
+          </h1>
+
+          {!joined ? (
+            <PlayerJoin groupId={groupId!} onJoined={onJoined} />
+          ) : showRanking ? (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="border-t border-slate-800 pt-4"
+            >
+              <h2 className="text-xl font-semibold mb-4 text-center">
+                🏆 {t('play.finalRanking', 'Final Ranking')}
+              </h2>
+              <ul className="space-y-2">
+                {sortedPlayers.map((p, idx) => (
+                  <li
+                    key={p.id}
+                    className={`flex justify-between px-4 py-2 rounded ${
+                      idx === 0
+                        ? 'bg-yellow-500 text-black font-bold'
+                        : idx === 1
+                        ? 'bg-gray-300 text-black font-semibold'
+                        : idx === 2
+                        ? 'bg-amber-700 text-white font-semibold'
+                        : 'bg-slate-800 text-white'
+                    }`}
+                  >
+                    <span>
+                      {idx + 1}. {p.name || t('play.playerFallback', 'Player')}
+                    </span>
+                    <span>{p.totalScore} pts</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ) : group?.status !== 'open' ? (
+            <div className="text-slate-300 text-sm sm:text-base">
+              {t(
+                'play.waitingHost',
+                'Waiting for the host to open the quiz…'
+              )}
+            </div>
+          ) : (
+            <div className="border-t border-slate-800 pt-4 overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={myQIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.4 }}
                 >
-                  <span>
-                    {idx + 1}. {p.name || 'Player'}
-                  </span>
-                  <span>{p.totalScore} pts</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        ) : group?.status !== 'open' ? (
-          <div className="text-slate-400">
-            Waiting for the host to open the quiz…
-          </div>
-        ) : (
-          <div className="border-t border-slate-800 pt-4 overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={myQIndex}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ duration: 0.4 }}
-              >
-                <LiveQuestion
-                  q={currentQuestion}
-                  onChoose={submit}
-                  roundStartedAt={{
-                    toMillis: () => roundStart ?? Date.now()
-                  }}
-                  maxTimeSec={(group as any)?.maxTimeSec ?? 20}
-                  answeredIndex={answeredIndex}
-                />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        )}
+                  <LiveQuestion
+                    q={currentQuestion}
+                    onChoose={submit}
+                    onTimeout={handleTimeoutNoAnswer}
+                    roundStartedAt={{
+                      toMillis: () => roundStart ?? Date.now(),
+                    }}
+                    maxTimeSec={(group as any)?.maxTimeSec ?? 20}
+                    answeredIndex={answeredIndex}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
