@@ -47,8 +47,8 @@ export const handler: Handler = async (event) => {
     const body = JSON.parse(event.body || '{}') as { plan?: 'monthly' | 'annual'; locale?: string };
     const plan = body.plan ?? 'monthly';
 
-    const priceMonthly = process.env.STRIPE_PRICE_PRO_MONTHLY;
-    const priceAnnual = process.env.STRIPE_PRICE_PRO_ANNUAL;
+    const priceMonthly = process.env.STRIPE_PRICE_MONTHLY;
+    const priceAnnual = process.env.STRIPE_PRICE_ANNUAL;
 
     const priceId =
       plan === 'annual'
@@ -59,7 +59,7 @@ export const handler: Handler = async (event) => {
       return bad(
         500,
         `Missing Stripe price env for plan=${plan}. ` +
-          `Check STRIPE_PRICE_PRO_MONTHLY / STRIPE_PRICE_PRO_ANNUAL.`
+          `Check STRIPE_PRICE_MONTHLY / STRIPE_PRICE_ANNUAL.`
       );
     }
 
