@@ -87,8 +87,8 @@ export const handler: Handler = async (event) => {
       await userRef.set({ stripeCustomerId }, { merge: true });
     }
 
-    const successUrl = `${process.env.SITE_URL}/success`;
-    const cancelUrl = `${process.env.SITE_URL}/dashboard`;
+    const successUrl = `${process.env.SITE_URL ?? 'https://topgamescore.com'}/success`;
+    const cancelUrl = `${process.env.SITE_URL ?? 'https://topgamescore.com'}/dashboard`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
