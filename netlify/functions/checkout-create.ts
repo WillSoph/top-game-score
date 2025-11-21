@@ -1,82 +1,100 @@
+// netlify/functions/checkout-create.ts
+import type { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
 import { adminAuth, adminDb } from './lib/firebaseAdmin';
 
+const secretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!secretKey) {
+  console.error('❌ STRIPE_SECRET_KEY is missing in environment variables');
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-export const handler = async (event: any) => {
-  // CORS / Preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers: {
-        'Access-Control-Allow-Origin': process.env.SITE_URL || '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      },
-      body: '',
-    };
-  }
+const ok = (data: unknown) => ({
+  statusCode: 200,
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data),
+});
 
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' };
-  }
+const bad = (status: number, msg: string) => ({
+  statusCode: status,
+  headers: { 'Content-Type': 'text/plain' },
+  body: msg,
+});
 
+export const handler: Handler = async (event) => {
   try {
-    const authHeader = event.headers.authorization || '';
-    const idToken = authHeader.replace('Bearer ', '');
-    if (!idToken) {
-      return { statusCode: 401, body: JSON.stringify({ error: 'Missing Authorization' }) };
+    if (event.httpMethod !== 'POST') {
+      return bad(405, 'Method not allowed');
     }
 
+    if (!stripe || !secretKey) {
+      return bad(500, 'Stripe not configured (missing STRIPE_SECRET_KEY)');
+    }
+
+    if (!event.headers.authorization?.startsWith('Bearer ')) {
+      return bad(401, 'Missing Firebase ID token');
+    }
+
+    const idToken = event.headers.authorization.slice('Bearer '.length).trim();
+
+    // valida usuário
     const decoded = await adminAuth.verifyIdToken(idToken);
     const uid = decoded.uid;
+    const email = decoded.email ?? 'no-email';
 
-    const body = event.body ? JSON.parse(event.body) : {};
-    const plan = (body.plan as 'monthly'|'annual') || 'monthly';
-    const locale = body.locale as string | undefined;
+    const body = JSON.parse(event.body || '{}') as { plan?: 'monthly' | 'annual'; locale?: string };
+    const plan = body.plan ?? 'monthly';
 
-    // Pegar/criar customer
-    const userRef = adminDb.collection('users').doc(uid);
-    const userSnap = await userRef.get();
-    let customerId = userSnap.get('stripeCustomerId') as string | undefined;
-
-    if (!customerId) {
-      const user = await adminAuth.getUser(uid);
-      const customer = await stripe.customers.create({
-        email: user.email || undefined,
-        metadata: { firebaseUID: uid },
-      });
-      customerId = customer.id;
-      await userRef.set({ stripeCustomerId: customer.id }, { merge: true });
-    }
+    const priceMonthly = process.env.STRIPE_PRICE_PRO_MONTHLY;
+    const priceAnnual = process.env.STRIPE_PRICE_PRO_ANNUAL;
 
     const priceId =
       plan === 'annual'
-        ? (process.env.STRIPE_PRICE_ANNUAL as string)
-        : (process.env.STRIPE_PRICE_MONTHLY as string);
+        ? priceAnnual
+        : priceMonthly;
+
+    if (!priceId) {
+      return bad(
+        500,
+        `Missing Stripe price env for plan=${plan}. ` +
+          `Check STRIPE_PRICE_PRO_MONTHLY / STRIPE_PRICE_PRO_ANNUAL.`
+      );
+    }
+
+    // pega ou cria customer
+    const userRef = adminDb.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+    let stripeCustomerId = userSnap.data()?.stripeCustomerId as string | undefined;
+
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email,
+        metadata: { firebaseUID: uid },
+      });
+      stripeCustomerId = customer.id;
+      await userRef.set({ stripeCustomerId }, { merge: true });
+    }
+
+    const successUrl = `${process.env.SITE_URL ?? 'https://topgamescore.com'}/success`;
+    const cancelUrl = `${process.env.SITE_URL ?? 'https://topgamescore.com'}/dashboard`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      customer: customerId,
+      customer: stripeCustomerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.SITE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.SITE_URL}/cancel`,
-      locale: (locale as any) || undefined,
-      allow_promotion_codes: true,
-      subscription_data: { metadata: { firebaseUID: uid } },
-      metadata: { firebaseUID: uid, plan },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: {
+        firebaseUID: uid,
+        locale: body.locale ?? 'en',
+      },
     });
 
-    return {
-      statusCode: 200,
-      headers: {
-        'content-type': 'application/json',
-        'Access-Control-Allow-Origin': process.env.SITE_URL || '*',
-      },
-      body: JSON.stringify({ url: session.url }),
-    };
-  } catch (err) {
-    console.error('checkout-create error:', err);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Server error' }) };
+    return ok({ url: session.url });
+  } catch (err: any) {
+    console.error('❌ checkout-create error:', err?.message || err, err?.stack);
+    return bad(500, `Server error: ${err?.message || 'unknown'}`);
   }
 };
