@@ -160,39 +160,77 @@ export default function AdminPage() {
   }, [mode]);
 
   async function loadGroups() {
-    setGroupsLoading(true);
-    try {
-      const q = query(collection(db, "groups"), orderBy("createdAt", "desc"));
-      const snap = await getDocs(q);
+  setGroupsLoading(true);
+  try {
+    const q = query(collection(db, "groups"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
 
-      const list: GroupAdminView[] = snap.docs.map((d) => {
-        const data = d.data() as any;
-        const plan = (data.plan ?? data.billingPlan) as "free" | "pro" | undefined;
+    // 1) montar lista básica com hostUid
+    const baseList = snap.docs.map((d) => {
+      const data = d.data() as any;
 
-        return {
-          id: d.id,
-          title: data.title || "(sem título)",
-          code: data.code,
-          hostUid: data.hostUid,
-          hostName: data.hostName ?? null,
-          hostEmail: data.hostEmail ?? null,
-          plan,
-          createdAt: data.createdAt?.toDate?.() ?? null,
-        };
-      });
+      return {
+        id: d.id,
+        title: data.title || "(sem título)",
+        code: data.code,
+        hostUid: data.hostUid,
+        hostName: data.hostName ?? null,
+        hostEmail: data.hostEmail ?? null,
+        // plano ainda "bruto" (pode vir do group, mas vamos sobrescrever)
+        plan: (data.plan ?? data.billingPlan) as "free" | "pro" | undefined,
+        createdAt: data.createdAt?.toDate?.() ?? null,
+      } as GroupAdminView;
+    });
 
-      setGroups(list);
-    } catch (err) {
-      console.error("Failed to load groups", err);
-      openDialog(
-        "Erro",
-        "Não foi possível carregar os grupos. Tente novamente mais tarde.",
-        "danger"
-      );
-    } finally {
-      setGroupsLoading(false);
-    }
+    // 2) pegar UIDs únicos de host
+    const hostUids = Array.from(
+      new Set(baseList.map((g) => g.hostUid).filter(Boolean))
+    );
+
+    // 3) buscar plano em users/{uid}
+    const hostPlans: Record<string, "free" | "pro"> = {};
+
+    await Promise.all(
+      hostUids.map(async (uid) => {
+        try {
+          const userSnap = await getDoc(doc(db, "users", uid));
+          const userData = userSnap.data() as any | undefined;
+
+          if (userData) {
+            const isPro =
+              userData.plan === "pro" &&
+              (userData.subscriptionStatus === "active" ||
+                userData.subscriptionStatus === "trialing");
+
+            hostPlans[uid] = isPro ? "pro" : "free";
+          } else {
+            hostPlans[uid] = "free";
+          }
+        } catch (e) {
+          console.error("Erro ao ler usuário do host", uid, e);
+          hostPlans[uid] = "free";
+        }
+      })
+    );
+
+    // 4) aplicar plano vindo do usuário nos grupos
+    const list: GroupAdminView[] = baseList.map((g) => ({
+      ...g,
+      plan: hostPlans[g.hostUid] ?? g.plan ?? "free",
+    }));
+
+    setGroups(list);
+  } catch (err) {
+    console.error("Failed to load groups", err);
+    openDialog(
+      "Erro",
+      "Não foi possível carregar os grupos. Tente novamente mais tarde.",
+      "danger"
+    );
+  } finally {
+    setGroupsLoading(false);
   }
+}
 
   // ============================
   // Métricas para os cards

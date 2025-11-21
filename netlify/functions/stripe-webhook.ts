@@ -24,7 +24,6 @@ export const handler: Handler = async (event) => {
   const sig = event.headers['stripe-signature'] as string;
   if (!sig) return bad(400, 'Missing stripe-signature');
 
-  // Corpo RAW (string); se vier base64, decodifica.
   const rawBody = event.isBase64Encoded
     ? Buffer.from(event.body || '', 'base64').toString('utf8')
     : (event.body || '');
@@ -41,12 +40,44 @@ export const handler: Handler = async (event) => {
     return bad(400, `Webhook Error: ${err?.message}`);
   }
 
+  /** ------------------------------------------
+   * Função auxiliar: atualizar todos os grupos
+   * -----------------------------------------*/
+  async function updateGroupsForUser(uid: string, isPro: boolean) {
+    const groupsSnap = await adminDb
+      .collection("groups")
+      .where("hostUid", "==", uid)
+      .get();
+
+    const batch = adminDb.batch();
+
+    groupsSnap.forEach((docRef) => {
+      const ref = adminDb.collection("groups").doc(docRef.id);
+      if (isPro) {
+        // PRO → SEM expiração
+        batch.set(ref, { plan: "pro", expiresAt: null }, { merge: true });
+      } else {
+        // FREE → expira em 7 dias
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        batch.set(ref, { plan: "free", expiresAt }, { merge: true });
+      }
+    });
+
+    await batch.commit();
+  }
+
+  /** ------------------------------------------
+   * Webhook handler
+   * -----------------------------------------*/
   try {
     switch (stripeEvent.type) {
+
+      /** ============================================================
+       * CHECKOUT CONCLUÍDO → ASSINAÇÃO CRIADA
+       * ============================================================*/
       case 'checkout.session.completed': {
         const session = stripeEvent.data.object as Stripe.Checkout.Session;
 
-        // Tenta UID via metadata; se não, resolve por customer -> users
         let uid = (session.metadata?.firebaseUID as string | undefined) || undefined;
 
         if (!uid && session.customer) {
@@ -60,31 +91,33 @@ export const handler: Handler = async (event) => {
         }
 
         if (uid && session.subscription) {
-          // TS friendly: garanta o tipo e faça guard do campo
-          const sub = (await stripe.subscriptions.retrieve(
+          const sub = await stripe.subscriptions.retrieve(
             session.subscription as string
-          )) as Stripe.Subscription;
+          );
 
-          const currentPeriodEnd =
-            // alguns ambientes/tipos podem “ocultar” o campo; faça guard
-            (sub as any).current_period_end ??
-            null;
+          const currentPeriodEnd = (sub as any).current_period_end ?? null;
 
+          // Atualiza usuário
           await adminDb.collection('users').doc(uid).set(
             {
               plan: 'pro',
               active: true,
               subscriptionId: sub.id,
-              currentPeriodEnd,       // number | null (epoch seconds)
+              currentPeriodEnd,
               canceledAt: null,
             },
             { merge: true }
           );
+
+          // Atualiza grupos → PRO = sem expiração
+          await updateGroupsForUser(uid, true);
         }
         break;
       }
 
-      case 'customer.subscription.created':
+      /** ============================================================
+       * ASSINATURA ATUALIZADA
+       * ============================================================*/
       case 'customer.subscription.updated': {
         const sub = stripeEvent.data.object as Stripe.Subscription;
         const custId = sub.customer as string;
@@ -98,23 +131,28 @@ export const handler: Handler = async (event) => {
         if (!q.empty) {
           const uid = q.docs[0].id;
           const active = sub.status === 'active' || sub.status === 'trialing';
+          const isPro = active;
 
-          const currentPeriodEnd =
-            (sub as any).current_period_end ?? null;
+          const currentPeriodEnd = (sub as any).current_period_end ?? null;
 
           await adminDb.collection('users').doc(uid).set(
             {
-              plan: active ? 'pro' : 'free',
-              active,
+              plan: isPro ? 'pro' : 'free',
+              active: isPro,
               subscriptionId: sub.id,
-              currentPeriodEnd,       // number | null
+              currentPeriodEnd,
             },
             { merge: true }
           );
+
+          await updateGroupsForUser(uid, isPro);
         }
         break;
       }
 
+      /** ============================================================
+       * ASSINATURA CANCELADA
+       * ============================================================*/
       case 'customer.subscription.deleted': {
         const sub = stripeEvent.data.object as Stripe.Subscription;
         const custId = sub.customer as string;
@@ -129,25 +167,26 @@ export const handler: Handler = async (event) => {
           const uid = q.docs[0].id;
 
           const canceledAt =
-            (sub as any).canceled_at ??
-            Math.floor(Date.now() / 1000);
+            (sub as any).canceled_at ?? Math.floor(Date.now() / 1000);
 
           await adminDb.collection('users').doc(uid).set(
             {
               plan: 'free',
               active: false,
               subscriptionId: null,
-              canceledAt,            // number (epoch seconds)
+              canceledAt,
               currentPeriodEnd: null,
             },
             { merge: true }
           );
+
+          // Voltou para FREE → recoloca expiração de 7 dias
+          await updateGroupsForUser(uid, false);
         }
         break;
       }
 
       default:
-        // outros eventos não tratados
         break;
     }
 
