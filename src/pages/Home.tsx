@@ -298,9 +298,10 @@ export default function Home() {
         >
           {/* Top bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+            {/* <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
               {t('app.title')}
-            </h1>
+            </h1> */}
+            <img src="/logo-top-game-score.png" alt="Logo Top Game Score" className="w-48 h-auto rounded-lg" />
 
             {/* mobile */}
             <div className="flex items-center justify-between sm:hidden">
