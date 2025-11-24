@@ -139,7 +139,9 @@ export default function HostPage() {
           {/* HEADER CARD (igual padrão Dashboard) */}
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur-sm px-4 py-4 sm:px-6 sm:py-5 shadow-xl space-y-4">
             {/* Row 1: back + título + badge plano */}
+            <img src="/logo-top-game-score.png" alt="Logo Top Game Score" className="w-48 h-auto rounded-lg" />
             <div className="flex items-center justify-between gap-3">
+              
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => (window.history.length > 1 ? nav(-1) : nav('/dashboard'))}
@@ -153,9 +155,10 @@ export default function HostPage() {
                   <span className="text-xs uppercase tracking-wide text-slate-400">
                     {t('host.heading')}
                   </span>
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-100 tracking-tight">
+                  {/* <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-100 tracking-tight">
                     TopGameScore
-                  </h1>
+                  </h1> */}
+                  
                 </div>
               </div>
 
