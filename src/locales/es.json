@@ -74,7 +74,8 @@
   },
 
   "play": {
-    "title": "Jugar"
+    "title": "Jugar",
+    "subtitlePlaying": "¡Responde rápido y sube en el ranking!"
   },
 
   "dashboard": {

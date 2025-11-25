@@ -73,7 +73,8 @@
   },
 
   "play": {
-    "title": "Jogar"
+    "title": "Jogar",
+    "subtitlePlaying": "Pense rápido e domine o ranking!"
   },
 
   "dashboard": {

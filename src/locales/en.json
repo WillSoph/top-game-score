@@ -74,7 +74,8 @@
   },
 
   "play": {
-    "title": "Play"
+    "title": "Play",
+    "subtitlePlaying": "Answer fast and climb the leaderboard!"
   },
 
   "dashboard": {
