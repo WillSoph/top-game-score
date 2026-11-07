@@ -8,7 +8,9 @@ type SA = {
 };
 
 function getServiceAccount(): SA {
-  const project_id = process.env.VITE_FIREBASE_PROJECT_ID;
+  const project_id =
+  process.env.FIREBASE_PROJECT_ID ||
+  process.env.VITE_FIREBASE_PROJECT_ID;
   const client_email = process.env.FIREBASE_CLIENT_EMAIL;
   const private_key_raw = process.env.FIREBASE_PRIVATE_KEY;
 
@@ -18,7 +20,6 @@ function getServiceAccount(): SA {
     );
   }
 
-  // Corrige quebra de linha para ambiente Netlify/Vercel
   const private_key = private_key_raw.replace(/\\n/g, '\n');
 
   return {
