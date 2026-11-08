@@ -31,14 +31,6 @@ const subscriptions: { month: string; total: number }[] = [];
 
 const planDistribution: { name: string; value: number }[] = [];
 
-const recentUsers: {
-  id: string;
-  name: string;
-  email: string;
-  plan: "Free" | "Pro";
-  createdAt: string;
-}[] = [];
-
 const aiUsage = {
   generated: null as number | null,
   averageQuestions: null as number | null,
@@ -73,11 +65,20 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
+type RecentUser = {
+  id: string;
+  name: string;
+  email: string;
+  plan: "Free" | "Pro";
+  createdAt: string;
+};
+
 type OverviewStats = {
   users: number | null;
   proUsers: number | null;
   quizzes: number | null;
   aiQuizzes: number | null;
+  recentUsers: RecentUser[];
 };
 
 export default function SuperadminDashboardPage() {
@@ -86,6 +87,7 @@ export default function SuperadminDashboardPage() {
     proUsers: null,
     quizzes: null,
     aiQuizzes: null,
+    recentUsers: [],
   });
 
   const [loadingStats, setLoadingStats] = useState(true);
@@ -287,8 +289,8 @@ export default function SuperadminDashboardPage() {
         {/* Últimos cadastros e IA */}
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.4fr_1fr]">
           <Panel title="Últimos cadastros">
-            {recentUsers.length === 0 ? (
-              <EmptyState text="Aguardando integração com Firebase Authentication." />
+            {stats.recentUsers.length === 0 ? (
+              <EmptyState text="Nenhum usuário cadastrado encontrado." />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
@@ -300,14 +302,32 @@ export default function SuperadminDashboardPage() {
                       <th className="pb-3 font-medium">Cadastro</th>
                     </tr>
                   </thead>
+
                   <tbody>
-                    {recentUsers.map((user) => (
-                      <tr key={user.id} className="border-b border-white/5">
-                        <td className="py-3 text-white">{user.name}</td>
-                        <td className="py-3 text-slate-300">{user.email}</td>
-                        <td className="py-3">
+                    {stats.recentUsers.map((user) => (
+                      <tr
+                        key={user.id}
+                        className="border-b border-white/5 transition hover:bg-white/[0.03]"
+                      >
+                        <td className="py-3 pr-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/15 text-blue-300">
+                              <Users size={15} />
+                            </div>
+
+                            <span className="font-medium text-white">
+                              {user.name}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="py-3 pr-3 text-slate-300">
+                          {user.email}
+                        </td>
+
+                        <td className="py-3 pr-3">
                           <span
-                            className={`rounded-full px-2.5 py-1 text-xs ${
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                               user.plan === "Pro"
                                 ? "bg-emerald-500/20 text-emerald-300"
                                 : "bg-slate-600/30 text-slate-300"
@@ -316,8 +336,16 @@ export default function SuperadminDashboardPage() {
                             {user.plan}
                           </span>
                         </td>
-                        <td className="py-3 text-slate-400">
-                          {user.createdAt}
+
+                        <td className="whitespace-nowrap py-3 text-xs text-slate-400">
+                          {new Date(user.createdAt).toLocaleString("pt-BR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone: "America/Sao_Paulo",
+                          })}
                         </td>
                       </tr>
                     ))}
