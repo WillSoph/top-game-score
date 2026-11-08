@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
+import AppModal from "../components/ui/AppModal";
 import {
   ChevronLeft,
   Flag,
@@ -291,6 +292,7 @@ export default function HostPage() {
 
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState<"start" | "finish" | null>(null);
+  const [showFinishModal, setShowFinishModal] = useState(false);
 
   const [toast, setToast] = useState<{
     open: boolean;
@@ -445,10 +447,6 @@ export default function HostPage() {
 
     if (!isActive) {
       showToast(copy.invalidStatus, "error");
-      return;
-    }
-
-    if (!window.confirm(copy.confirmFinish)) {
       return;
     }
 
@@ -771,7 +769,7 @@ export default function HostPage() {
                   {canFinish && (
                     <button
                       type="button"
-                      onClick={finishQuiz}
+                      onClick={() => setShowFinishModal(true)}
                       disabled={busy !== null}
                       className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-rose-400/40 bg-rose-500/10 px-5 text-sm font-bold text-rose-200 transition hover:border-rose-400/70 hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                     >
@@ -916,6 +914,47 @@ export default function HostPage() {
             {toast.message}
           </div>
         )}
+
+        <AppModal
+          open={showFinishModal}
+          onClose={() => setShowFinishModal(false)}
+          variant="danger"
+          maxWidth="xl"
+          image="/nyxie-warning.png"
+          imageAlt="Nyxie alertando sobre o encerramento da partida"
+          imagePosition="left"
+          title={
+            <>
+              Tem certeza que deseja{" "}
+              <span className="text-pink-400">finalizar este quiz?</span>
+            </>
+          }
+          description={
+            <>
+              Ao finalizar, a partida será encerrada definitivamente. O ranking
+              e as pontuações dos jogadores serão preservados.
+            </>
+          }
+          loading={busy === "finish"}
+          secondaryAction={{
+            label: "Continuar partida",
+            icon: Gamepad2,
+            variant: "primary",
+            onClick: () => setShowFinishModal(false),
+          }}
+          primaryAction={{
+            label: "Sim, finalizar quiz",
+            icon: Flag,
+            variant: "danger",
+            loading: busy === "finish",
+            onClick: finishQuiz,
+          }}
+        >
+          <div className="flex items-center gap-3 rounded-xl border border-rose-400/40 bg-rose-500/10 p-4 text-sm font-bold text-rose-200">
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+            Esta ação não poderá ser desfeita.
+          </div>
+        </AppModal>
       </div>
     </>
   );
