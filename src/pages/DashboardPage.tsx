@@ -1074,6 +1074,8 @@ function GroupCard({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = group.status === "open";
+  const canStart = !group.status || group.status === "draft";
+  const canFinish = isActive;
 
   useEffect(() => {
     let mounted = true;
@@ -1225,25 +1227,29 @@ function GroupCard({
 
       {/* Ações */}
       <div className="mt-auto flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={onStart}
-          title={copy.startHint}
-          className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-3 text-xs font-extrabold text-slate-950 transition hover:brightness-110 sm:text-sm"
-        >
-          <Play className="h-4 w-4 fill-current" />
-          <span className="whitespace-nowrap">{copy.startQuiz}</span>
-        </button>
+        {canStart && (
+          <button
+            type="button"
+            onClick={onStart}
+            title={copy.startHint}
+            className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-3 text-xs font-extrabold text-slate-950 transition hover:brightness-110 sm:text-sm"
+          >
+            <Play className="h-4 w-4 fill-current" />
+            <span className="whitespace-nowrap">{copy.startQuiz}</span>
+          </button>
+        )}
 
-        <button
-          type="button"
-          onClick={onFinish}
-          title={copy.finishHint}
-          className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#526582] bg-[#101d32] px-3 text-xs font-semibold text-slate-100 transition hover:border-red-400/50 hover:bg-red-400/10"
-        >
-          <Flag className="h-4 w-4" />
-          <span>{copy.finishQuiz}</span>
-        </button>
+        {canFinish && (
+          <button
+            type="button"
+            onClick={onFinish}
+            title={copy.finishHint}
+            className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#526582] bg-[#101d32] px-3 text-xs font-semibold text-slate-100 transition hover:border-red-400/50 hover:bg-red-400/10"
+          >
+            <Flag className="h-4 w-4" />
+            <span>{copy.finishQuiz}</span>
+          </button>
+        )}
 
         <button
           type="button"
