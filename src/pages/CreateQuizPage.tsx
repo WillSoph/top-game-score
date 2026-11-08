@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   addDoc,
   collection,
@@ -180,6 +180,13 @@ export default function CreateQuizPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const modeParam = searchParams.get("mode");
+
+  const selectedMode: CreationMode | null =
+    modeParam === "manual" || modeParam === "ai" ? modeParam : null;
+
   const detectedLang = (i18n.resolvedLanguage || i18n.language || "en").split(
     "-",
   )[0];
@@ -195,7 +202,21 @@ export default function CreateQuizPage() {
   const isPro = plan === "pro" && active;
   const limit = isPro ? MAX_QUESTION_LIMIT : FREE_QUESTION_LIMIT;
 
-  const [mode, setMode] = useState<CreationMode | null>(null);
+  const [mode, setMode] = useState<CreationMode | null>(selectedMode);
+
+  useEffect(() => {
+    setMode(selectedMode);
+  }, [selectedMode]);
+
+  function changeCreationMode(nextMode: CreationMode | null) {
+    setMode(nextMode);
+
+    if (nextMode === null) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ mode: nextMode });
+    }
+  }
 
   // Configurações da geração com IA
   const [aiTopic, setAiTopic] = useState("");
@@ -670,7 +691,7 @@ export default function CreateQuizPage() {
               {/* MANUAL */}
               <button
                 type="button"
-                onClick={() => setMode("manual")}
+                onClick={() => changeCreationMode("manual")}
                 className="group rounded-2xl border border-slate-700 bg-slate-900/70 p-6 text-left transition hover:border-blue-400 hover:bg-slate-800/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-2xl text-blue-300">
@@ -693,7 +714,7 @@ export default function CreateQuizPage() {
               {/* IA */}
               <button
                 type="button"
-                onClick={() => setMode("ai")}
+                onClick={() => changeCreationMode("ai")}
                 className="group rounded-2xl border border-emerald-500/30 bg-slate-900/70 p-6 text-left transition hover:border-emerald-400 hover:bg-slate-800/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-2xl text-emerald-300">
@@ -716,7 +737,7 @@ export default function CreateQuizPage() {
           <>
             <button
               type="button"
-              onClick={() => setMode(null)}
+              onClick={() => nav("/dashboard")}
               className="mt-5 text-sm text-cyan-300 hover:text-cyan-200"
             >
               ← {labels.backModes}
