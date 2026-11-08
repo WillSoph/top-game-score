@@ -135,6 +135,7 @@ export default function CreateQuizPage() {
   const [aiOptionCount, setAiOptionCount] = useState(4);
   const [aiDifficulty, setAiDifficulty] = useState<Difficulty>("medium");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiSaving, setAiSaving] = useState(false);
   const [aiError, setAiError] = useState("");
   const [aiPreview, setAiPreview] = useState<GeneratedQuiz | null>(null);
   const [aiUsage, setAiUsage] = useState<{
@@ -246,8 +247,47 @@ export default function CreateQuizPage() {
     }
   }
 
+  async function saveAiQuiz() {
+    if (!aiPreview || !aiRequestId || aiSaving || aiLoading || !isPro) return;
+    const user = auth.currentUser;
+    if (!user) {
+      setAiError(t("create.toast.signInRequired"));
+      return;
+    }
+    setAiSaving(true);
+    setAiError("");
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/.netlify/functions/save-ai-quiz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ generationId: aiRequestId, maxTimeSec }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        groupId?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.error || `Erro HTTP ${response.status}`);
+      if (!data.groupId)
+        throw new Error("O servidor não retornou o identificador do quiz.");
+      nav("/dashboard");
+    } catch (error) {
+      setAiError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar o quiz.",
+      );
+    } finally {
+      setAiSaving(false);
+    }
+  }
+
   function discardAiQuiz() {
-    if (!aiPreview || aiLoading) return;
+    if (!aiPreview || aiLoading || aiSaving) return;
     setAiPreview(null);
     setAiRequestId(null);
     setAiError("");
@@ -745,6 +785,7 @@ export default function CreateQuizPage() {
                       <button
                         type="button"
                         onClick={discardAiQuiz}
+                        disabled={aiSaving}
                         className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-5 py-3 font-semibold text-rose-200 hover:bg-rose-500/20"
                       >
                         {lang === "pt"
@@ -755,15 +796,21 @@ export default function CreateQuizPage() {
                       </button>
                       <button
                         type="button"
-                        disabled
-                        title="Aguardando endpoint de salvamento seguro"
-                        className="cursor-not-allowed rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white opacity-50"
+                        onClick={saveAiQuiz}
+                        disabled={aiSaving || !isPro}
+                        className="rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {lang === "pt"
-                          ? "Salvar quiz (próxima etapa)"
-                          : lang === "es"
-                            ? "Guardar quiz (siguiente etapa)"
-                            : "Save quiz (next step)"}
+                        {aiSaving
+                          ? lang === "pt"
+                            ? "Salvando..."
+                            : lang === "es"
+                              ? "Guardando..."
+                              : "Saving..."
+                          : lang === "pt"
+                            ? "Salvar quiz"
+                            : lang === "es"
+                              ? "Guardar quiz"
+                              : "Save quiz"}
                       </button>
                     </div>
                   </div>
