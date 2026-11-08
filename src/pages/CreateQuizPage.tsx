@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   addDoc,
   collection,
@@ -8,33 +8,37 @@ import {
   Timestamp,
   writeBatch,
   setDoc,
-} from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
-import LanguageSwitcher from '../components/LanguageSwitcher';
-import { useTranslation } from 'react-i18next';
+} from "firebase/firestore";
+import { auth, db } from "../lib/firebase";
+import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 // ⬇️ Se você já criou o hook de plano e o botão de upgrade, use-os:
-import { useUserPlan } from '../hooks/useUserPlan';
+import { useUserPlan } from "../hooks/useUserPlan";
 // import { UpgradeButton } from '../components/billing/UpgradeButton';
 
-type Lang = 'en' | 'pt' | 'es';
+type Lang = "en" | "pt" | "es";
 
-const FREE_QUESTION_LIMIT = 10; // ajuste aqui o limite do plano free
+const FREE_QUESTION_LIMIT = 10;
+const MAX_QUESTION_LIMIT = 30;
+
+const MIN_OPTIONS = 2;
+const MAX_OPTIONS = 5;
 
 export default function CreateQuizPage() {
   const { t } = useTranslation();
   const nav = useNavigate();
 
   const { plan, active } = useUserPlan(); // 'free' | 'pro'
-  const isPro = plan === 'pro' && active;
-  const limit = FREE_QUESTION_LIMIT;
+  const isPro = plan === "pro" && active;
+  const limit = isPro ? MAX_QUESTION_LIMIT : FREE_QUESTION_LIMIT;
 
-  const [title, setTitle] = useState('Quiz');
+  const [title, setTitle] = useState("Quiz");
   const [maxTimeSec, setMaxTimeSec] = useState(20);
-  const [language, setLanguage] = useState<Lang>('en');
+  const [language, setLanguage] = useState<Lang>("en");
 
-  const [text, setText] = useState('');
-  const [opts, setOpts] = useState(['', '', '', '']);
+  const [text, setText] = useState("");
+  const [opts, setOpts] = useState(["", "", "", ""]);
   const [correctIndex, setCorrectIndex] = useState(0);
 
   const [questions, setQuestions] = useState<
@@ -43,34 +47,52 @@ export default function CreateQuizPage() {
 
   // contagem e restante (para UI)
   const qCount = questions.length;
-  const remaining = useMemo(
-    () => (isPro ? Infinity : Math.max(0, limit - qCount)),
-    [isPro, limit, qCount]
-  );
+  const remaining = useMemo(() => Math.max(0, limit - qCount), [limit, qCount]);
 
   useEffect(() => {
-    if (!auth.currentUser) nav('/');
+    if (!auth.currentUser) nav("/");
   }, [nav]);
 
   function addLocalQuestion() {
-    if (!text.trim() || opts.some((o) => !o.trim())) {
-      alert(t('create.validation.questionIncomplete'));
+    const cleanText = text.trim();
+    const cleanOptions = opts.map((option) => option.trim());
+
+    if (!cleanText || cleanOptions.some((option) => !option)) {
+      alert(t("create.validation.questionIncomplete"));
       return;
     }
-    // bloqueio client-side para plano free
-    if (!isPro && qCount >= limit) {
+
+    if (
+      cleanOptions.length < MIN_OPTIONS ||
+      cleanOptions.length > MAX_OPTIONS
+    ) {
+      alert("Cada pergunta deve ter entre 2 e 5 alternativas.");
+      return;
+    }
+
+    if (correctIndex < 0 || correctIndex >= cleanOptions.length) {
+      alert("Selecione uma alternativa correta.");
+      return;
+    }
+
+    if (qCount >= limit) {
       alert(
-        t('create.limit.freeReached', {
-          defaultValue:
-            'You reached the free plan limit of {{limit}} questions. Upgrade to add more.',
-          limit,
-        })
+        `Você atingiu o limite de ${limit} perguntas por quiz para seu plano.`,
       );
       return;
     }
-    setQuestions((prev) => [...prev, { text: text.trim(), options: [...opts], correctIndex }]);
-    setText('');
-    setOpts(['', '', '', '']);
+
+    setQuestions((prev) => [
+      ...prev,
+      {
+        text: cleanText,
+        options: cleanOptions,
+        correctIndex,
+      },
+    ]);
+
+    setText("");
+    setOpts(["", "", "", ""]);
     setCorrectIndex(0);
   }
 
@@ -78,83 +100,110 @@ export default function CreateQuizPage() {
     setQuestions((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  function addOption() {
+    if (opts.length >= MAX_OPTIONS) return;
+
+    setOpts((prev) => [...prev, ""]);
+  }
+
+  function removeOption() {
+    if (opts.length <= MIN_OPTIONS) return;
+
+    setOpts((prev) => prev.slice(0, -1));
+
+    if (correctIndex >= opts.length - 1) {
+      setCorrectIndex(0);
+    }
+  }
+
   async function createGroup() {
-  if (!auth.currentUser) {
-    alert(t('create.toast.signInRequired'));
-    return;
-  }
-
-  // defesa extra no create (client-side): não permitir criar grupo acima do limite no free
-  if (!isPro && qCount > limit) {
-    alert(
-      t('create.limit.freeReached', {
-        defaultValue:
-          'You reached the free plan limit of {{limit}} questions. Upgrade to add more.',
-        limit,
-      })
-    );
-    return;
-  }
-
-  try {
-    const user = auth.currentUser;
-    const hostUid = user.uid;
-    const now = Timestamp.now();
-
-    // Nome e email do host (para mostrar no admin)
-    const hostEmail = user.email ?? null;
-    const hostName =
-      user.displayName ||
-      (hostEmail ? hostEmail.split('@')[0] : null);
-
-    // Plano free: expira em 7 dias; Pro: sem expiração (null)
-    const expiresAt = isPro
-      ? null
-      : Timestamp.fromMillis(now.toMillis() + 7 * 24 * 60 * 60 * 1000);
-
-    // Criação do grupo
-    const ref = await addDoc(collection(db, 'groups'), {
-      hostUid,
-      hostName,
-      hostEmail,
-      code: '',
-      title: title || 'Quiz',
-      createdAt: serverTimestamp(),
-      expiresAt,
-      status: 'draft',
-      currentQuestionIndex: -1,
-      questionCount: qCount,
-      roundStartedAt: null,
-      maxTimeSec: Number(maxTimeSec) || 20,
-      locale: language,
-      plan: isPro ? 'pro' : 'free', // salva o plano vigente
-    });
-
-    // código = id do grupo
-    await setDoc(ref, { code: ref.id }, { merge: true });
-
-    // Perguntas em batch
-    if (qCount > 0) {
-      const batch = writeBatch(db);
-      questions.forEach((q, index) => {
-        const qRef = doc(collection(db, 'groups', ref.id, 'questions'));
-        batch.set(qRef, { ...q, index });
-      });
-      await batch.commit();
+    if (!auth.currentUser) {
+      alert(t("create.toast.signInRequired"));
+      return;
     }
 
-    nav('/dashboard');
-  } catch (err: any) {
-    console.error('Erro ao criar grupo:', err);
-    alert(
-      `Erro ao criar grupo: ${
-        err?.message || 'verifique o console do navegador para mais detalhes.'
-      }`
+    // defesa extra no create (client-side): não permitir criar grupo acima do limite no free
+    if (qCount === 0) {
+      alert("Adicione pelo menos uma pergunta antes de criar o quiz.");
+      return;
+    }
+
+    if (qCount > limit) {
+      alert(`O limite do seu plano é de ${limit} perguntas por quiz.`);
+      return;
+    }
+
+    const invalidQuestion = questions.some(
+      (question) =>
+        !question.text.trim() ||
+        question.options.length < MIN_OPTIONS ||
+        question.options.length > MAX_OPTIONS ||
+        question.options.some((option) => !option.trim()) ||
+        question.correctIndex < 0 ||
+        question.correctIndex >= question.options.length,
     );
+
+    if (invalidQuestion) {
+      alert("Existem perguntas ou alternativas inválidas.");
+      return;
+    }
+
+    try {
+      const user = auth.currentUser;
+      const hostUid = user.uid;
+      const now = Timestamp.now();
+
+      // Nome e email do host (para mostrar no admin)
+      const hostEmail = user.email ?? null;
+      const hostName =
+        user.displayName || (hostEmail ? hostEmail.split("@")[0] : null);
+
+      // Plano free: expira em 7 dias; Pro: sem expiração (null)
+      const expiresAt = isPro
+        ? null
+        : Timestamp.fromMillis(now.toMillis() + 7 * 24 * 60 * 60 * 1000);
+
+      // Criação do grupo
+      const ref = await addDoc(collection(db, "groups"), {
+        hostUid,
+        hostName,
+        hostEmail,
+        code: "",
+        title: title || "Quiz",
+        createdAt: serverTimestamp(),
+        expiresAt,
+        status: "draft",
+        currentQuestionIndex: -1,
+        questionCount: qCount,
+        roundStartedAt: null,
+        maxTimeSec: Number(maxTimeSec) || 20,
+        locale: language,
+        plan: isPro ? "pro" : "free", // salva o plano vigente
+      });
+
+      // código = id do grupo
+      await setDoc(ref, { code: ref.id }, { merge: true });
+
+      // Perguntas em batch
+      if (qCount > 0) {
+        const batch = writeBatch(db);
+        questions.forEach((q, index) => {
+          const qRef = doc(collection(db, "groups", ref.id, "questions"));
+          batch.set(qRef, { ...q, index });
+        });
+        await batch.commit();
+      }
+
+      nav("/dashboard");
+    } catch (err: any) {
+      console.error("Erro ao criar grupo:", err);
+      alert(
+        `Erro ao criar grupo: ${
+          err?.message || "verifique o console do navegador para mais detalhes."
+        }`,
+      );
+    }
   }
-}
-
-
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
@@ -165,7 +214,7 @@ export default function CreateQuizPage() {
             onClick={() => history.back()}
             className="w-fit text-sm text-slate-300 hover:text-white transition"
           >
-            ← {t('common.back')}
+            ← {t("common.back")}
           </button>
 
           <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -173,21 +222,23 @@ export default function CreateQuizPage() {
             <span
               className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
                 isPro
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-800 border border-slate-700 text-slate-200'
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-800 border border-slate-700 text-slate-200"
               }`}
               title={
                 isPro
-                  ? t('create.limit.badge.pro', { defaultValue: 'Pro — unlimited questions' })
-                  : t('create.limit.badge.free', {
-                      defaultValue: 'Free — up to {{limit}} questions',
+                  ? t("create.limit.badge.pro", {
+                      defaultValue: "Pro — up to {{limit}} questions",
+                    })
+                  : t("create.limit.badge.free", {
+                      defaultValue: "Free — up to {{limit}} questions",
                       limit,
                     })
               }
             >
               {isPro
-                ? t('create.limit.badge.pro', { defaultValue: 'Pro' })
-                : t('create.limit.badge.free', { defaultValue: 'Free' })}
+                ? t("create.limit.badge.pro", { defaultValue: "Pro" })
+                : t("create.limit.badge.free", { defaultValue: "Free" })}
             </span>
 
             {/* CTA Upgrade — mostre apenas se for free */}
@@ -195,10 +246,10 @@ export default function CreateQuizPage() {
               // Descomente se já tiver o componente
               // <UpgradeButton />
               <button
-                onClick={() => (window.location.href = '/pricing')}
+                onClick={() => (window.location.href = "/pricing")}
                 className="px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-blue-500 text-white text-sm font-semibold hover:opacity-90 transition"
               >
-                {t('create.limit.upgradeCta', { defaultValue: 'Upgrade' })}
+                {t("create.limit.upgradeCta", { defaultValue: "Upgrade" })}
               </button>
             )}
 
@@ -209,38 +260,41 @@ export default function CreateQuizPage() {
         {/* Header */}
         <div className="mt-2 sm:mt-3">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-            {t('create.title')}
+            {t("create.title")}
           </h1>
-          {/* Linha de status do limite (apenas no free) */}
-          {!isPro && (
-            <p className="mt-2 text-sm text-slate-300">
-              {t('create.limit.freeCounter', {
-                defaultValue: 'You can still add {{remaining}} question(s) on the free plan.',
-                remaining,
-              })}
-            </p>
-          )}
+          <p className="mt-2 text-sm text-slate-300">
+            {qCount} de {limit} perguntas adicionadas
+            <span className="ml-2 text-emerald-400">
+              ({remaining} restantes)
+            </span>
+          </p>
         </div>
 
         {/* Card principal */}
         <div className="mt-4 sm:mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm shadow-xl p-4 sm:p-6 space-y-6 sm:space-y-8">
           {/* Configurações básicas */}
           <section>
-            <h2 className="text-slate-200 font-semibold mb-3">{t('create.setupTitle')}</h2>
+            <h2 className="text-slate-200 font-semibold mb-3">
+              {t("create.setupTitle")}
+            </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-sm block mb-1 text-slate-300">{t('create.fields.title')}</label>
+                <label className="text-sm block mb-1 text-slate-300">
+                  {t("create.fields.title")}
+                </label>
                 <input
                   className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t('create.fields.titlePlaceholder')!}
+                  placeholder={t("create.fields.titlePlaceholder")!}
                 />
               </div>
 
               <div>
-                <label className="text-sm block mb-1 text-slate-300">{t('create.fields.maxTime')}</label>
+                <label className="text-sm block mb-1 text-slate-300">
+                  {t("create.fields.maxTime")}
+                </label>
                 <input
                   type="number"
                   min={5}
@@ -248,22 +302,28 @@ export default function CreateQuizPage() {
                   className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   value={maxTimeSec}
                   onChange={(e) =>
-                    setMaxTimeSec(Math.max(5, Math.min(300, Number(e.target.value) || 20)))
+                    setMaxTimeSec(
+                      Math.max(5, Math.min(300, Number(e.target.value) || 20)),
+                    )
                   }
                 />
-                <p className="text-xs text-slate-400 mt-1">{t('create.fields.maxTimeHint')}</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {t("create.fields.maxTimeHint")}
+                </p>
               </div>
 
               <div>
-                <label className="text-sm block mb-1 text-slate-300">{t('create.fields.language')}</label>
+                <label className="text-sm block mb-1 text-slate-300">
+                  {t("create.fields.language")}
+                </label>
                 <select
                   className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as Lang)}
                 >
-                  <option value="en">{t('create.lang.en')}</option>
-                  <option value="pt">{t('create.lang.pt')}</option>
-                  <option value="es">{t('create.lang.es')}</option>
+                  <option value="en">{t("create.lang.en")}</option>
+                  <option value="pt">{t("create.lang.pt")}</option>
+                  <option value="es">{t("create.lang.es")}</option>
                 </select>
               </div>
             </div>
@@ -271,12 +331,14 @@ export default function CreateQuizPage() {
 
           {/* Editor de perguntas */}
           <section>
-            <h2 className="text-slate-200 font-semibold mb-3">{t('create.questions.title')}</h2>
+            <h2 className="text-slate-200 font-semibold mb-3">
+              {t("create.questions.title")}
+            </h2>
 
             <div className="space-y-3">
               <input
                 className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                placeholder={t('create.questions.placeholderQuestion')!}
+                placeholder={t("create.questions.placeholderQuestion")!}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
               />
@@ -285,7 +347,7 @@ export default function CreateQuizPage() {
                 <div key={i} className="relative overflow-hidden rounded-lg">
                   <input
                     className="w-full px-3 py-2.5 pr-24 sm:pr-28 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                    placeholder={`${t('create.questions.option')} ${i + 1}`}
+                    placeholder={`${t("create.questions.option")} ${i + 1}`}
                     value={v}
                     onChange={(e) => {
                       const clone = [...opts];
@@ -293,39 +355,64 @@ export default function CreateQuizPage() {
                       setOpts(clone);
                     }}
                   />
-                  <label
-                    className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-2 py-1 bg-slate-900/70 backdrop-blur-sm border border-slate-700 rounded-md text-slate-300 text-xs sm:text-[13px] whitespace-nowrap shadow-sm"
-                  >
+                  <label className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-2 py-1 bg-slate-900/70 backdrop-blur-sm border border-slate-700 rounded-md text-slate-300 text-xs sm:text-[13px] whitespace-nowrap shadow-sm">
                     <input
                       type="radio"
                       className="accent-emerald-500 shrink-0"
                       checked={i === correctIndex}
                       onChange={() => setCorrectIndex(i)}
                     />
-                    <span className="hidden sm:inline">{t('create.questions.correct')}</span>
+                    <span className="hidden sm:inline">
+                      {t("create.questions.correct")}
+                    </span>
                   </label>
                 </div>
               ))}
 
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={removeOption}
+                  disabled={opts.length <= MIN_OPTIONS}
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  − Remover alternativa
+                </button>
+
+                <span className="text-sm text-slate-400">
+                  {opts.length} de {MAX_OPTIONS} alternativas
+                </span>
+
+                <button
+                  type="button"
+                  onClick={addOption}
+                  disabled={opts.length >= MAX_OPTIONS}
+                  className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  + Adicionar alternativa
+                </button>
+              </div>
+
               <button
                 onClick={addLocalQuestion}
-                disabled={!isPro && qCount >= limit}
+                disabled={qCount >= limit}
                 className={`w-full sm:w-auto px-4 py-2.5 rounded-lg font-medium transition
                   ${
-                    !isPro && qCount >= limit
-                      ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
-                      : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                    qCount >= limit
+                      ? "bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed"
+                      : "bg-indigo-600 hover:bg-indigo-500 text-white"
                   }`}
                 title={
-                  !isPro && qCount >= limit
-                    ? t('create.limit.freeReached', {
-                        defaultValue: 'You reached the free plan limit of {{limit}} questions.',
+                  qCount >= limit
+                    ? t("create.limit.freeReached", {
+                        defaultValue:
+                          "You reached the free plan limit of {{limit}} questions.",
                         limit,
                       })
                     : undefined
                 }
               >
-                {t('create.questions.add')}
+                {t("create.questions.add")}
               </button>
             </div>
 
@@ -348,8 +435,8 @@ export default function CreateQuizPage() {
                               key={i}
                               className={`px-2 py-1 rounded break-words ${
                                 i === q.correctIndex
-                                  ? 'text-emerald-300 bg-emerald-500/10 border border-emerald-500/30'
-                                  : 'text-slate-300'
+                                  ? "text-emerald-300 bg-emerald-500/10 border border-emerald-500/30"
+                                  : "text-slate-300"
                               }`}
                             >
                               {o}
@@ -362,7 +449,7 @@ export default function CreateQuizPage() {
                           onClick={() => removeLocalQuestion(idx)}
                           className="w-full sm:w-auto px-3 py-2 rounded-lg text-rose-100 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-sm"
                         >
-                          {t('create.questions.remove')}
+                          {t("create.questions.remove")}
                         </button>
                       </div>
                     </div>
@@ -377,17 +464,17 @@ export default function CreateQuizPage() {
             <p className="text-xs text-amber-300/90 border border-amber-500/30 rounded-xl px-3 py-2 bg-amber-500/5">
               {/* TTL muda conforme plano */}
               {isPro
-                ? t('create.ttl.pro', {
+                ? t("create.ttl.pro", {
                     defaultValue:
-                      'Pro plan: your data will be kept without auto-deletion.',
+                      "Pro plan: your data will be kept without auto-deletion.",
                   })
-                : `⚠️ ${t('create.ttl')}`}
+                : `⚠️ ${t("create.ttl")}`}
             </p>
             <button
               onClick={createGroup}
               className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-semibold hover:opacity-90 active:opacity-100 transition"
             >
-              {t('create.cta.createGroup')}
+              {t("create.cta.createGroup")}
             </button>
           </div>
         </div>
