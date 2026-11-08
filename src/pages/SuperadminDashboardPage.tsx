@@ -24,14 +24,8 @@ import {
 import SuperadminLayout from "../components/superadmin/SuperadminLayout";
 import StatCard from "../components/superadmin/StatCard";
 
-// Valores temporários até integrarmos Firebase e Stripe.
-// null representa informação ainda não carregada.
-const stats = {
-  users: null as number | null,
-  proUsers: null as number | null,
-  quizzes: null as number | null,
-  aiQuizzes: null as number | null,
-};
+import { useEffect, useState } from "react";
+import { superadminAuth } from "../lib/superadminAuth";
 
 const subscriptions: { month: string; total: number }[] = [];
 
@@ -79,13 +73,94 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
+type OverviewStats = {
+  users: number | null;
+  proUsers: number | null;
+  quizzes: number | null;
+  aiQuizzes: number | null;
+};
+
 export default function SuperadminDashboardPage() {
+  const [stats, setStats] = useState<OverviewStats>({
+    users: null,
+    proUsers: null,
+    quizzes: null,
+    aiQuizzes: null,
+  });
+
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadStats() {
+      try {
+        const user = superadminAuth.currentUser;
+
+        if (!user) {
+          throw new Error("Sessão administrativa não encontrada.");
+        }
+
+        const token = await user.getIdToken();
+
+        const response = await fetch(
+          "/.netlify/functions/superadmin-overview",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Erro ao carregar indicadores: ${response.status}`);
+        }
+
+        const data: OverviewStats = await response.json();
+
+        if (active) {
+          setStats(data);
+          setStatsError("");
+        }
+      } catch (error) {
+        if (active) {
+          setStatsError(
+            error instanceof Error
+              ? error.message
+              : "Erro ao carregar indicadores.",
+          );
+        }
+      } finally {
+        if (active) setLoadingStats(false);
+      }
+    }
+
+    loadStats();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <SuperadminLayout
       title="Visão geral"
       description="Acompanhe os principais indicadores da plataforma."
     >
       <div className="space-y-6">
+        {loadingStats && (
+          <p className="text-sm text-slate-400">Carregando indicadores...</p>
+        )}
+
+        {statsError && (
+          <p
+            role="alert"
+            className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300"
+          >
+            {statsError}
+          </p>
+        )}
         {/* Indicadores principais */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard

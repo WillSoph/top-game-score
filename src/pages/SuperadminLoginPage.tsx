@@ -89,14 +89,13 @@ export default function SuperadminLoginPage() {
 
       <div className="relative z-10 w-full max-w-[460px]">
         <div className="mb-9 flex flex-col items-center text-center">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border border-emerald-400/30 bg-emerald-500/10">
-            <Gamepad2 className="h-11 w-11 text-cyan-400" />
+          <div className="flex items-center justify-center">
+            <img
+              src="/logo-top-game-score.png"
+              alt="TopGameScore"
+              className="h-auto w-full max-w-[190px] object-contain"
+            />
           </div>
-
-          <h1 className="text-3xl font-black tracking-tight">
-            <span className="text-cyan-400">TOP</span>
-            <span className="text-emerald-400">GAMESCORE</span>
-          </h1>
 
           <div className="mt-6 flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400">
             <ShieldCheck size={17} />

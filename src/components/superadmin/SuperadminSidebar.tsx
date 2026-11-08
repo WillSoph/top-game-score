@@ -58,12 +58,12 @@ export default function SuperadminSidebar({ open, onClose }: Props) {
       >
         <div className="border-b border-white/5 px-5 py-7">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Gamepad2 size={28} className="text-cyan-400" />
-              <span className="text-sm font-black tracking-tight">
-                <span className="text-cyan-400">TOP</span>
-                <span className="text-emerald-400">GAMESCORE</span>
-              </span>
+            <div className="flex items-center justify-center">
+              <img
+                src="/logo-top-game-score.png"
+                alt="TopGameScore"
+                className="h-auto w-full max-w-[190px] object-contain"
+              />
             </div>
 
             <button
