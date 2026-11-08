@@ -15,12 +15,29 @@ i18n
       pt: { translation: pt },
       es: { translation: es },
     },
+
     fallbackLng: 'en',
+
     supportedLngs: ['en', 'pt', 'es'],
-    interpolation: { escapeValue: false },
+
+    load: 'languageOnly',
+
+    interpolation: {
+      escapeValue: false,
+    },
+
     detection: {
-      order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],
+      order: [
+        'querystring',
+        'localStorage',
+        'navigator',
+        'htmlTag',
+      ],
+
       caches: ['localStorage'],
+
+      lookupQuerystring: 'lng',
+      lookupLocalStorage: 'i18nextLng',
     },
   });
 
