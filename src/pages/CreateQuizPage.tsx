@@ -1,4 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  Crown,
+  Gamepad2,
+  List,
+  Clock3,
+  Globe2,
+  Pencil,
+  HelpCircle,
+  Plus,
+  Trash2,
+  Sparkles,
+  CheckCircle2,
+  X,
+  ChevronDown,
+} from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   addDoc,
@@ -42,6 +58,28 @@ const MAX_OPTIONS = 5;
 
 const ui = {
   pt: {
+    setupHeading: "Configurar Quiz",
+    setupDescription:
+      "Defina as configurações e adicione as perguntas do seu quiz manual.",
+    basic: "Configurações básicas",
+    basicDesc: "Defina o título, o tempo de resposta e o idioma do quiz.",
+    questionsHeading: "Perguntas",
+    questionsDesc: "Adicione as perguntas e defina a alternativa correta.",
+    timeLabel: "Tempo por questão (segundos)",
+    timeHint: "Permitido: 5 a 300 segundos.",
+    timeError: "Informe um tempo entre 5 e 300 segundos.",
+    questionPlaceholder: "Digite a pergunta aqui...",
+    optionPlaceholder: "Alternativa",
+    correctLabel: "Correta",
+    createLabel: "Criar quiz",
+    planPro: "Plano Pro · Até 30 perguntas",
+    planFree: "Plano Free · Até 10 perguntas",
+    countOf: "de",
+    addedHeading: "Perguntas adicionadas",
+    backLabel: "Voltar",
+    changeMode: "Alterar modo de criação",
+    aiSubtitle: "Configure o tema e as opções para gerar seu quiz com IA.",
+    chooseSubtitle: "Escolha como quer criar a sua próxima experiência.",
     choose: "Como deseja criar seu quiz?",
     manual: "Criar manualmente",
     manualDesc: "Escreva suas perguntas, alternativas e respostas corretas.",
@@ -86,6 +124,27 @@ const ui = {
     invalidCorrect: "Selecione uma alternativa correta.",
   },
   en: {
+    setupHeading: "Set up Quiz",
+    setupDescription: "Set the options and add questions to your manual quiz.",
+    basic: "Basic settings",
+    basicDesc: "Set the title, answer time, and quiz language.",
+    questionsHeading: "Questions",
+    questionsDesc: "Add questions and choose the correct answer.",
+    timeLabel: "Time per question (seconds)",
+    timeHint: "Allowed: 5 to 300 seconds.",
+    timeError: "Enter a time between 5 and 300 seconds.",
+    questionPlaceholder: "Type your question here...",
+    optionPlaceholder: "Option",
+    correctLabel: "Correct",
+    createLabel: "Create quiz",
+    planPro: "Pro plan · Up to 30 questions",
+    planFree: "Free plan · Up to 10 questions",
+    countOf: "of",
+    addedHeading: "Added questions",
+    backLabel: "Back",
+    changeMode: "Change creation mode",
+    aiSubtitle: "Set a topic and options to generate your AI quiz.",
+    chooseSubtitle: "Choose how to create your next experience.",
     choose: "How would you like to create your quiz?",
     manual: "Create manually",
     manualDesc: "Write questions, answers and choose the correct option.",
@@ -130,6 +189,28 @@ const ui = {
     invalidCorrect: "Select a correct answer.",
   },
   es: {
+    setupHeading: "Configurar Quiz",
+    setupDescription:
+      "Define la configuración y añade preguntas a tu quiz manual.",
+    basic: "Configuración básica",
+    basicDesc: "Define el título, el tiempo de respuesta y el idioma.",
+    questionsHeading: "Preguntas",
+    questionsDesc: "Añade preguntas y elige la respuesta correcta.",
+    timeLabel: "Tiempo por pregunta (segundos)",
+    timeHint: "Permitido: 5 a 300 segundos.",
+    timeError: "Introduce un tiempo entre 5 y 300 segundos.",
+    questionPlaceholder: "Escribe tu pregunta aquí...",
+    optionPlaceholder: "Alternativa",
+    correctLabel: "Correcta",
+    createLabel: "Crear quiz",
+    planPro: "Plan Pro · Hasta 30 preguntas",
+    planFree: "Plan Gratis · Hasta 10 preguntas",
+    countOf: "de",
+    addedHeading: "Preguntas añadidas",
+    backLabel: "Volver",
+    changeMode: "Cambiar modo de creación",
+    aiSubtitle: "Configura el tema y las opciones para generar tu quiz con IA.",
+    chooseSubtitle: "Elige cómo crear tu próxima experiencia.",
     choose: "¿Cómo quieres crear tu quiz?",
     manual: "Crear manualmente",
     manualDesc: "Escribe preguntas, alternativas y respuestas correctas.",
@@ -233,7 +314,15 @@ export default function CreateQuizPage() {
 
   // Configurações gerais
   const [title, setTitle] = useState("Quiz");
-  const [maxTimeSec, setMaxTimeSec] = useState(20);
+  const [maxTimeInput, setMaxTimeInput] = useState("20");
+  const maxTimeSec = Math.max(5, Math.min(300, Number(maxTimeInput) || 20));
+  const validTime =
+    /^\d+$/.test(maxTimeInput.trim()) &&
+    Number(maxTimeInput) >= 5 &&
+    Number(maxTimeInput) <= 300;
+  function normalizeTime() {
+    setMaxTimeInput(String(maxTimeSec));
+  }
   const [language, setLanguage] = useState<Lang>("en");
 
   // Editor manual
@@ -379,6 +468,11 @@ export default function CreateQuizPage() {
       return;
     }
 
+    if (!validTime) {
+      setAiError(labels.timeError);
+      return;
+    }
+
     setAiSaving(true);
     setAiError("");
 
@@ -511,6 +605,11 @@ export default function CreateQuizPage() {
 
     if (mode !== "manual") return;
 
+    if (!validTime) {
+      alert(labels.timeError);
+      return;
+    }
+
     if (qCount === 0) {
       alert(labels.questionRequired);
       return;
@@ -605,648 +704,634 @@ export default function CreateQuizPage() {
     }
   }
 
-  // ============================================================
-  // INTERFACE
-  // ============================================================
+  const fieldClass =
+    "w-full min-w-0 rounded-xl border border-[#405075] bg-[#182440]/90 px-4 py-3 text-white placeholder:text-slate-400 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 disabled:opacity-50";
+  const letter = ["A", "B", "C", "D", "E"];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,.20),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_40%)]">
-      <div className="mx-auto max-w-4xl p-4 sm:p-6">
-        {/* TOP BAR */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="relative min-h-screen overflow-hidden bg-[#080d23] text-white">
+      {/* Fundo gamer: faixas neon, pontos e luzes */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <div className="absolute -left-48 top-32 h-[650px] w-[650px] rounded-full bg-fuchsia-700/20 blur-[110px]" />
+        <div className="absolute -right-40 bottom-0 h-[600px] w-[600px] rounded-full bg-purple-700/20 blur-[120px]" />
+        <div className="absolute left-[15%] top-[-110px] h-[2px] w-[390px] -rotate-[34deg] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_18px_#22d3ee]" />
+        <div className="absolute left-[38%] top-10 h-[3px] w-[290px] -rotate-[34deg] bg-gradient-to-r from-transparent via-fuchsia-500 to-transparent shadow-[0_0_18px_#d946ef]" />
+        <div className="absolute -left-16 top-[230px] h-[3px] w-[290px] -rotate-[34deg] bg-gradient-to-r from-transparent via-fuchsia-500 to-transparent shadow-[0_0_18px_#d946ef]" />
+        <div className="absolute -left-16 bottom-20 h-[3px] w-[320px] -rotate-[34deg] bg-gradient-to-r from-transparent via-fuchsia-500 to-transparent shadow-[0_0_18px_#d946ef]" />
+        <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(#6656bd_1px,transparent_1px)] [background-size:23px_23px] [mask-image:linear-gradient(90deg,black,transparent_25%,transparent_75%,black)]" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-[1600px] px-4 pb-16 pt-6 sm:px-8 lg:px-12">
+        <header className="flex flex-wrap items-center justify-between gap-4">
           <button
             type="button"
             onClick={() => nav("/dashboard")}
-            className="w-fit text-sm text-slate-300 hover:text-white transition"
+            className="inline-flex items-center gap-2 text-base font-semibold text-slate-200 transition hover:text-cyan-300"
           >
-            ← {t("common.back")}
+            <ArrowLeft size={20} /> {labels.backLabel}
           </button>
-
-          <div className="flex items-center gap-3 self-start sm:self-auto">
+          <div className="flex flex-wrap items-center gap-3">
             <span
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-                isPro
-                  ? "bg-emerald-600 text-white"
-                  : "bg-slate-800 border border-slate-700 text-slate-200"
-              }`}
-              title={
-                isPro
-                  ? t("create.limit.badge.pro", {
-                      defaultValue: "Pro — up to {{limit}} questions",
-                      limit,
-                    })
-                  : t("create.limit.badge.free", {
-                      defaultValue: "Free — up to {{limit}} questions",
-                      limit,
-                    })
-              }
+              className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold ${isPro ? "border-emerald-400 bg-emerald-400/5 text-emerald-300" : "border-slate-600 bg-slate-800/80 text-slate-200"}`}
             >
-              {isPro
-                ? t("create.limit.badge.pro", {
-                    defaultValue: "Pro",
-                  })
-                : t("create.limit.badge.free", {
-                    defaultValue: "Free",
-                  })}
+              <Crown
+                size={18}
+                className={isPro ? "text-amber-300" : "text-slate-400"}
+              />{" "}
+              {isPro ? labels.planPro : labels.planFree}
             </span>
-
             {!isPro && (
               <button
                 type="button"
                 onClick={() => nav("/")}
-                className="px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-blue-500 text-white text-sm font-semibold hover:opacity-90 transition"
+                className="rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-3 py-2 text-sm font-bold text-slate-950"
               >
-                {t("create.limit.upgradeCta", {
-                  defaultValue: "Upgrade",
-                })}
+                {t("create.limit.upgradeCta", { defaultValue: "Upgrade" })}
               </button>
             )}
-
             <LanguageSwitcher />
           </div>
-        </div>
+        </header>
 
-        {/* HEADER */}
-        <div className="mt-2 sm:mt-3">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-            {t("create.title")}
+        <div className="mt-6">
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl lg:text-[42px]">
+            {labels.setupHeading.split(" ")[0]}{" "}
+            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              Quiz
+            </span>
           </h1>
-
+          <p className="mt-2 text-sm text-slate-300 sm:text-lg">
+            {mode === "manual"
+              ? labels.setupDescription
+              : mode === "ai"
+                ? labels.aiSubtitle
+                : labels.chooseSubtitle}
+          </p>
           {mode === "manual" && (
-            <p className="mt-2 text-sm text-slate-300">
-              {qCount} / {limit} {labels.manualCounter}
-              <span className="ml-2 text-emerald-400">
-                ({remaining} {labels.remaining})
-              </span>
+            <p className="mt-2 text-xs text-emerald-300">
+              {qCount} / {limit} {labels.manualCounter} · {remaining}{" "}
+              {labels.remaining}
             </p>
           )}
         </div>
 
-        {/* SELEÇÃO DO MODO */}
         {mode === null ? (
-          <section className="mt-6 space-y-4">
-            <h2 className="text-xl font-bold text-white">{labels.choose}</h2>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {/* MANUAL */}
+          <div className="mx-auto mt-12 max-w-4xl">
+            <h2 className="mb-6 text-center text-2xl font-bold">
+              {labels.choose}
+            </h2>
+            <div className="grid gap-5 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={() => changeCreationMode("manual")}
-                className="group rounded-2xl border border-slate-700 bg-slate-900/70 p-6 text-left transition hover:border-blue-400 hover:bg-slate-800/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
+                className="group rounded-3xl border border-fuchsia-500/40 bg-[#111934]/90 p-8 text-left shadow-xl transition hover:-translate-y-1 hover:border-fuchsia-400"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-2xl text-blue-300">
-                  ✎
-                </div>
-
-                <h3 className="text-lg font-bold text-white">
-                  {labels.manual}
-                </h3>
-
-                <p className="mt-2 min-h-[3rem] text-sm text-slate-400">
+                <Gamepad2 size={42} className="mb-5 text-fuchsia-400" />
+                <h3 className="text-xl font-bold">{labels.manual}</h3>
+                <p className="mt-2 text-sm text-slate-300">
                   {labels.manualDesc}
                 </p>
-
-                <span className="mt-4 inline-flex rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                <span className="mt-6 inline-flex rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
                   {labels.allPlans}
                 </span>
               </button>
-
-              {/* IA */}
               <button
                 type="button"
                 onClick={() => changeCreationMode("ai")}
-                className="group rounded-2xl border border-emerald-500/30 bg-slate-900/70 p-6 text-left transition hover:border-emerald-400 hover:bg-slate-800/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"
+                className="group rounded-3xl border border-cyan-500/40 bg-[#111934]/90 p-8 text-left shadow-xl transition hover:-translate-y-1 hover:border-cyan-400"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-2xl text-emerald-300">
-                  ✦
-                </div>
-
-                <h3 className="text-lg font-bold text-white">{labels.ai}</h3>
-
-                <p className="mt-2 min-h-[3rem] text-sm text-slate-400">
-                  {labels.aiDesc}
-                </p>
-
-                <span className="mt-4 inline-flex rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                <Sparkles size={42} className="mb-5 text-cyan-400" />
+                <h3 className="text-xl font-bold">{labels.ai}</h3>
+                <p className="mt-2 text-sm text-slate-300">{labels.aiDesc}</p>
+                <span className="mt-6 inline-flex rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
                   {labels.proOnly}
                 </span>
               </button>
             </div>
-          </section>
+          </div>
         ) : (
           <>
             <button
               type="button"
-              onClick={() => nav("/dashboard")}
-              className="mt-5 text-sm text-cyan-300 hover:text-cyan-200"
+              onClick={() => changeCreationMode(null)}
+              className="mt-5 inline-flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-200"
             >
-              ← {labels.backModes}
+              <ArrowLeft size={15} /> {labels.changeMode}
             </button>
 
-            {mode === "ai" ? (
-              // ==================================================
-              // FORMULÁRIO DE IA
-              // ==================================================
-
-              <section className="mt-4 space-y-5 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl sm:p-6">
-                <h2 className="text-xl font-bold text-white">
-                  {labels.aiTitle}
-                </h2>
-
-                {!isPro && (
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-                    <p>{labels.upgrade}</p>
-
-                    <button
-                      type="button"
-                      onClick={() => nav("/")}
-                      className="mt-3 rounded-lg bg-gradient-to-r from-emerald-500 to-blue-500 px-4 py-2 font-semibold text-white"
-                    >
-                      {t("create.limit.upgradeCta", {
-                        defaultValue: "Upgrade",
-                      })}
-                    </button>
-                  </div>
-                )}
-
-                {/* TEMA */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="ai-topic"
-                    className="block text-sm font-medium text-slate-300"
-                  >
-                    {labels.topic}
-                  </label>
-
-                  <textarea
-                    id="ai-topic"
-                    value={aiTopic}
-                    onChange={(e) => {
-                      setAiTopic(e.target.value);
-                      setAiRequestId(null);
-                    }}
-                    disabled={!isPro || !!aiPreview || aiLoading}
-                    maxLength={300}
-                    rows={3}
-                    placeholder={labels.topicPlaceholder}
-                    className="w-full resize-y rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+            <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(220px,0.43fr)_minmax(0,1fr)] xl:gap-7">
+              {/* Nyxie: PNG transparente na pasta public */}
+              <aside className="relative hidden min-h-[630px] self-stretch lg:block">
+                <div className="sticky top-8 flex min-h-[650px] items-center justify-center">
+                  <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fuchsia-600/20 blur-[80px]" />
+                  <Gamepad2
+                    aria-hidden
+                    className="absolute right-5 top-16 rotate-12 text-fuchsia-400/80 drop-shadow-[0_0_12px_#d946ef]"
+                    size={68}
+                    strokeWidth={1.5}
+                  />
+                  <img
+                    src="/nyxie-start-2.png"
+                    alt="Nyxie fazendo sinais de paz com as mãos"
+                    className="relative z-10 max-h-[710px] w-full object-contain object-bottom drop-shadow-[0_20px_38px_rgba(217,70,239,.24)]"
                   />
                 </div>
+              </aside>
 
-                {/* PERGUNTAS / ALTERNATIVAS / DIFICULDADE */}
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <label className="space-y-2 text-sm text-slate-300">
-                    <span className="block">{labels.count}</span>
-
-                    <select
-                      value={aiQuestionCount}
-                      onChange={(e) => {
-                        setAiQuestionCount(Number(e.target.value));
-                        setAiRequestId(null);
-                      }}
-                      disabled={!isPro || !!aiPreview || aiLoading}
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3 text-white disabled:opacity-50"
-                    >
-                      {Array.from(
-                        { length: MAX_QUESTION_LIMIT },
-                        (_, i) => i + 1,
-                      ).map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="space-y-2 text-sm text-slate-300">
-                    <span className="block">{labels.alternatives}</span>
-
-                    <select
-                      value={aiOptionCount}
-                      onChange={(e) => {
-                        setAiOptionCount(Number(e.target.value));
-                        setAiRequestId(null);
-                      }}
-                      disabled={!isPro || !!aiPreview || aiLoading}
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3 text-white disabled:opacity-50"
-                    >
-                      {[2, 3, 4, 5].map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="space-y-2 text-sm text-slate-300">
-                    <span className="block">{labels.difficulty}</span>
-
-                    <select
-                      value={aiDifficulty}
-                      onChange={(e) => {
-                        setAiDifficulty(e.target.value as Difficulty);
-                        setAiRequestId(null);
-                      }}
-                      disabled={!isPro || !!aiPreview || aiLoading}
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3 text-white disabled:opacity-50"
-                    >
-                      <option value="easy">{labels.easy}</option>
-                      <option value="medium">{labels.medium}</option>
-                      <option value="hard">{labels.hard}</option>
-                    </select>
-                  </label>
-                </div>
-
-                {/* IDIOMA E TEMPO */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="space-y-2 text-sm text-slate-300">
-                    <span className="block">{t("create.fields.language")}</span>
-
-                    <select
-                      value={language}
-                      onChange={(e) => {
-                        setLanguage(e.target.value as Lang);
-                        setAiRequestId(null);
-                      }}
-                      disabled={!isPro || !!aiPreview || aiLoading}
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3 text-white disabled:opacity-50"
-                    >
-                      <option value="en">{t("create.lang.en")}</option>
-                      <option value="pt">{t("create.lang.pt")}</option>
-                      <option value="es">{t("create.lang.es")}</option>
-                    </select>
-                  </label>
-
-                  <label className="space-y-2 text-sm text-slate-300">
-                    <span className="block">{t("create.fields.maxTime")}</span>
-
-                    <input
-                      type="number"
-                      min={5}
-                      max={300}
-                      value={maxTimeSec}
-                      disabled={!isPro || aiSaving}
-                      onChange={(e) =>
-                        setMaxTimeSec(
-                          Math.max(
-                            5,
-                            Math.min(300, Number(e.target.value) || 20),
-                          ),
-                        )
-                      }
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3 text-white disabled:opacity-50"
-                    />
-                  </label>
-                </div>
-
-                {/* INFORMAÇÃO SOBRE COTAS */}
-                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <p className="text-sm font-semibold text-emerald-300">
-                    {labels.quota}
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-400">
-                    {labels.quotaNote}
-                  </p>
-                </div>
-
-                {aiUsage && (
-                  <p className="text-sm text-slate-300">
-                    {labels.used}:{" "}
-                    <strong className="text-emerald-300">
-                      {aiUsage.used}/{aiUsage.limit}
-                    </strong>{" "}
-                    ({aiUsage.month} UTC)
-                  </p>
-                )}
-
-                {aiError && (
-                  <p
-                    role="alert"
-                    className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200"
-                  >
-                    {aiError}
-                  </p>
-                )}
-
-                {!aiPreview ? (
-                  // BOTÃO GERAR
-                  <button
-                    type="button"
-                    onClick={generateAiQuiz}
-                    disabled={!isPro || aiLoading || aiSaving}
-                    className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 px-5 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {aiLoading ? labels.generating : `✦ ${labels.ai}`}
-                  </button>
-                ) : (
-                  // ==============================================
-                  // PRÉ-VISUALIZAÇÃO DO QUIZ GERADO
-                  // ==============================================
-
-                  <div className="space-y-4 border-t border-slate-700 pt-5">
-                    <div>
-                      <h3 className="text-lg font-bold text-white">
-                        {aiPreview.title}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-amber-300">
-                        {labels.generated}
-                      </p>
-                    </div>
-
-                    <ol className="space-y-3">
-                      {aiPreview.questions.map((question, index) => (
-                        <li
-                          key={index}
-                          className="rounded-xl border border-slate-700 bg-slate-800/70 p-4"
-                        >
-                          <p className="font-semibold text-white">
-                            {index + 1}. {question.text}
+              <main className="min-w-0 overflow-hidden rounded-[26px] border border-fuchsia-500/70 bg-[linear-gradient(130deg,rgba(18,21,53,.96),rgba(8,18,42,.97))] p-5 shadow-[0_20px_80px_rgba(0,0,0,.3),0_0_32px_rgba(147,51,234,.12)] sm:p-8">
+                {mode === "manual" ? (
+                  <>
+                    <section>
+                      <div className="mb-6 flex items-center gap-4">
+                        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-fuchsia-500/70 bg-fuchsia-700/25 text-white shadow-[0_0_20px_rgba(217,70,239,.16)]">
+                          <Gamepad2 size={30} />
+                        </span>
+                        <div>
+                          <h2 className="text-xl font-bold sm:text-2xl">
+                            {labels.basic}
+                          </h2>
+                          <p className="mt-1 text-sm text-slate-300">
+                            {labels.basicDesc}
                           </p>
-
-                          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-                            {question.options.map((option, optionIndex) => (
-                              <li
-                                key={optionIndex}
-                                className={`rounded-lg px-3 py-2 text-sm ${
-                                  optionIndex === question.correctIndex
-                                    ? "border border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-                                    : "bg-slate-900 text-slate-300"
-                                }`}
-                              >
-                                {String.fromCharCode(65 + optionIndex)}.{" "}
-                                {option}
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                      ))}
-                    </ol>
-
-                    {/* AÇÕES */}
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <button
-                        type="button"
-                        onClick={discardAiQuiz}
-                        disabled={aiSaving}
-                        className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-5 py-3 font-semibold text-rose-200 hover:bg-rose-500/20 disabled:opacity-50"
-                      >
-                        {labels.discard}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={saveAiQuiz}
-                        disabled={aiSaving || !isPro}
-                        className="rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {aiSaving ? labels.saving : labels.save}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </section>
-            ) : (
-              // ==================================================
-              // CRIAÇÃO MANUAL
-              // ==================================================
-
-              <div className="mt-4 sm:mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm shadow-xl p-4 sm:p-6 space-y-6 sm:space-y-8">
-                {/* CONFIGURAÇÕES BÁSICAS */}
-                <section>
-                  <h2 className="text-slate-200 font-semibold mb-3">
-                    {t("create.setupTitle")}
-                  </h2>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* TÍTULO */}
-                    <div>
-                      <label className="text-sm block mb-1 text-slate-300">
-                        {t("create.fields.title")}
-                      </label>
-
-                      <input
-                        className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder={t("create.fields.titlePlaceholder")}
-                      />
-                    </div>
-
-                    {/* TEMPO */}
-                    <div>
-                      <label className="text-sm block mb-1 text-slate-300">
-                        {t("create.fields.maxTime")}
-                      </label>
-
-                      <input
-                        type="number"
-                        min={5}
-                        max={300}
-                        className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                        value={maxTimeSec}
-                        onChange={(e) =>
-                          setMaxTimeSec(
-                            Math.max(
-                              5,
-                              Math.min(300, Number(e.target.value) || 20),
-                            ),
-                          )
-                        }
-                      />
-
-                      <p className="text-xs text-slate-400 mt-1">
-                        {t("create.fields.maxTimeHint")}
-                      </p>
-                    </div>
-
-                    {/* IDIOMA */}
-                    <div>
-                      <label className="text-sm block mb-1 text-slate-300">
-                        {t("create.fields.language")}
-                      </label>
-
-                      <select
-                        className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                        value={language}
-                        onChange={(e) => setLanguage(e.target.value as Lang)}
-                      >
-                        <option value="en">{t("create.lang.en")}</option>
-                        <option value="pt">{t("create.lang.pt")}</option>
-                        <option value="es">{t("create.lang.es")}</option>
-                      </select>
-                    </div>
-                  </div>
-                </section>
-
-                {/* EDITOR DE PERGUNTAS */}
-                <section>
-                  <h2 className="text-slate-200 font-semibold mb-3">
-                    {t("create.questions.title")}
-                  </h2>
-
-                  <div className="space-y-3">
-                    <input
-                      className="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                      placeholder={t("create.questions.placeholderQuestion")}
-                      value={text}
-                      onChange={(e) => setText(e.target.value)}
-                    />
-
-                    {/* ALTERNATIVAS */}
-                    {opts.map((option, index) => (
-                      <div
-                        key={index}
-                        className="relative overflow-hidden rounded-lg"
-                      >
-                        <input
-                          className="w-full px-3 py-2.5 pr-24 sm:pr-28 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                          placeholder={`${t(
-                            "create.questions.option",
-                          )} ${index + 1}`}
-                          value={option}
-                          onChange={(e) => {
-                            const clone = [...opts];
-                            clone[index] = e.target.value;
-                            setOpts(clone);
-                          }}
-                        />
-
-                        <label className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-2 py-1 bg-slate-900/70 backdrop-blur-sm border border-slate-700 rounded-md text-slate-300 text-xs sm:text-[13px] whitespace-nowrap shadow-sm">
-                          <input
-                            type="radio"
-                            name="correct-answer"
-                            className="accent-emerald-500 shrink-0"
-                            checked={index === correctIndex}
-                            onChange={() => setCorrectIndex(index)}
-                          />
-
-                          <span className="hidden sm:inline">
-                            {t("create.questions.correct")}
+                        </div>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <label className="block min-w-0 text-sm font-semibold text-slate-100">
+                          {t("create.fields.title")}
+                          <div className="relative mt-2">
+                            <Pencil
+                              size={18}
+                              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-300"
+                            />
+                            <input
+                              className={`${fieldClass} pl-10`}
+                              value={title}
+                              onChange={(e) => setTitle(e.target.value)}
+                              placeholder={t("create.fields.titlePlaceholder")}
+                            />
+                          </div>
+                        </label>
+                        <label className="block min-w-0 text-sm font-semibold text-slate-100">
+                          {labels.timeLabel}
+                          <div className="relative mt-2">
+                            <Clock3
+                              size={19}
+                              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400"
+                            />
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              autoComplete="off"
+                              className={`${fieldClass} border-emerald-400 pl-10`}
+                              value={maxTimeInput}
+                              onChange={(e) => {
+                                if (/^\d{0,3}$/.test(e.target.value))
+                                  setMaxTimeInput(e.target.value);
+                              }}
+                              onBlur={normalizeTime}
+                              aria-invalid={!validTime}
+                              aria-describedby="quiz-time-hint"
+                            />
+                          </div>
+                          <span
+                            id="quiz-time-hint"
+                            className={`mt-1 block text-xs font-normal ${validTime ? "text-slate-400" : "text-rose-300"}`}
+                          >
+                            {validTime ? labels.timeHint : labels.timeError}
                           </span>
                         </label>
+                        <label className="block min-w-0 text-sm font-semibold text-slate-100">
+                          {t("create.fields.language")}
+                          <div className="relative mt-2">
+                            <Globe2
+                              size={18}
+                              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-300"
+                            />
+                            <select
+                              className={`${fieldClass} appearance-none pl-10 pr-10`}
+                              value={language}
+                              onChange={(e) =>
+                                setLanguage(e.target.value as Lang)
+                              }
+                            >
+                              <option value="pt">{t("create.lang.pt")}</option>
+                              <option value="en">{t("create.lang.en")}</option>
+                              <option value="es">{t("create.lang.es")}</option>
+                            </select>
+                            <ChevronDown
+                              size={17}
+                              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-300"
+                            />
+                          </div>
+                        </label>
                       </div>
-                    ))}
+                    </section>
 
-                    {/* CONTROLE DE ALTERNATIVAS */}
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="my-7 h-px bg-gradient-to-r from-slate-600/80 via-slate-700 to-transparent" />
+
+                    <section>
+                      <div className="mb-6 flex items-center gap-4">
+                        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-fuchsia-500/70 bg-fuchsia-700/25">
+                          <List size={30} />
+                        </span>
+                        <div>
+                          <h2 className="text-xl font-bold sm:text-2xl">
+                            {labels.questionsHeading}
+                          </h2>
+                          <p className="mt-1 text-sm text-slate-300">
+                            {labels.questionsDesc}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <HelpCircle
+                          size={20}
+                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                        />
+                        <input
+                          className={`${fieldClass} pl-12`}
+                          placeholder={labels.questionPlaceholder}
+                          value={text}
+                          onChange={(e) => setText(e.target.value)}
+                        />
+                      </div>
+                      <div className="mt-4 space-y-2.5">
+                        {opts.map((option, index) => (
+                          <div
+                            key={index}
+                            className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 sm:gap-3"
+                          >
+                            <div className="relative min-w-0">
+                              <span className="pointer-events-none absolute left-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg bg-indigo-600/80 text-sm font-bold text-white">
+                                {letter[index]}
+                              </span>
+                              <input
+                                className={`${fieldClass} py-2.5 pl-12`}
+                                value={option}
+                                onChange={(e) =>
+                                  setOpts((prev) =>
+                                    prev.map((value, i) =>
+                                      i === index ? e.target.value : value,
+                                    ),
+                                  )
+                                }
+                                placeholder={`${labels.optionPlaceholder} ${index + 1}`}
+                              />
+                            </div>
+                            <label
+                              className={`flex min-w-[92px] cursor-pointer items-center justify-center gap-2 rounded-xl border px-2 text-xs font-semibold transition sm:min-w-[120px] sm:text-sm ${correctIndex === index ? "border-emerald-500/25 bg-emerald-500/10 text-white" : "border-transparent bg-[#15213c] text-slate-300 hover:border-slate-600"}`}
+                            >
+                              <input
+                                type="radio"
+                                name="correct-answer"
+                                className="h-4 w-4 accent-emerald-400"
+                                checked={correctIndex === index}
+                                onChange={() => setCorrectIndex(index)}
+                              />
+                              <span>{labels.correctLabel}</span>
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={removeOption}
+                          disabled={opts.length <= MIN_OPTIONS}
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-600 bg-[#182440] px-4 py-2.5 text-sm font-semibold transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <Trash2 size={17} />
+                          {labels.removeOption.replace(/^[−-]\s*/, "")}
+                        </button>
+                        <span className="text-sm text-slate-300">
+                          {opts.length} {labels.countOf} {MAX_OPTIONS}{" "}
+                          {labels.optionCount}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={addOption}
+                          disabled={opts.length >= MAX_OPTIONS}
+                          className="inline-flex items-center gap-2 rounded-xl border border-emerald-400 bg-emerald-400/5 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <Plus size={18} />
+                          {labels.addOption.replace(/^\+\s*/, "")}
+                        </button>
+                      </div>
+                      <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={addLocalQuestion}
+                          disabled={qCount >= limit || manualSaving}
+                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-indigo-600 px-6 py-3 text-base font-bold text-white shadow-[0_8px_30px_rgba(124,58,237,.25)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <Plus size={22} />
+                          {t("create.questions.add")}
+                        </button>
+                        <span className="text-xs text-slate-400">
+                          {qCount} / {limit} {labels.manualCounter}
+                        </span>
+                      </div>
+                      {questions.length > 0 && (
+                        <div className="mt-7 space-y-3">
+                          <h3 className="text-sm font-bold text-slate-200">
+                            {labels.addedHeading} ({questions.length})
+                          </h3>
+                          {questions.map((question, index) => (
+                            <div
+                              key={index}
+                              className="rounded-xl border border-slate-700 bg-[#15213b] p-4"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <p className="font-semibold">
+                                  {index + 1}. {question.text}
+                                </p>
+                                <button
+                                  type="button"
+                                  disabled={manualSaving}
+                                  onClick={() => removeLocalQuestion(index)}
+                                  className="rounded-lg p-2 text-rose-300 hover:bg-rose-500/10"
+                                  aria-label={t("create.questions.remove")}
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                {question.options.map((option, i) => (
+                                  <span
+                                    key={i}
+                                    className={`rounded-lg px-3 py-2 text-sm ${i === question.correctIndex ? "border border-emerald-500/40 bg-emerald-500/10 text-emerald-200" : "bg-[#0d1730] text-slate-300"}`}
+                                  >
+                                    {letter[i]}. {option}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                    <div className="mt-9 flex flex-col-reverse items-start justify-between gap-4 border-t border-slate-700/70 pt-6 sm:flex-row sm:items-center">
+                      <p className="max-w-md rounded-xl border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-xs text-amber-300">
+                        {isPro
+                          ? t("create.ttl.pro", {
+                              defaultValue:
+                                "Pro plan: your data will be kept without auto-deletion.",
+                            })
+                          : t("create.ttl")}
+                      </p>
                       <button
                         type="button"
-                        onClick={removeOption}
-                        disabled={opts.length <= MIN_OPTIONS}
-                        className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        onClick={createGroup}
+                        disabled={manualSaving || !validTime}
+                        className="inline-flex w-full shrink-0 items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-7 py-3.5 text-base font-extrabold text-[#071126] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                       >
-                        {labels.removeOption}
-                      </button>
-
-                      <span className="text-sm text-slate-400">
-                        {opts.length} de {MAX_OPTIONS} {labels.optionCount}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={addOption}
-                        disabled={opts.length >= MAX_OPTIONS}
-                        className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        {labels.addOption}
+                        <Gamepad2 size={24} />
+                        {manualSaving ? labels.saving : labels.createLabel}
                       </button>
                     </div>
-
-                    {/* ADICIONAR PERGUNTA */}
-                    <button
-                      type="button"
-                      onClick={addLocalQuestion}
-                      disabled={qCount >= limit || manualSaving}
-                      className={`w-full sm:w-auto px-4 py-2.5 rounded-lg font-medium transition ${
-                        qCount >= limit || manualSaving
-                          ? "bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed"
-                          : "bg-indigo-600 hover:bg-indigo-500 text-white"
-                      }`}
-                      title={
-                        qCount >= limit
-                          ? t("create.limit.freeReached", {
-                              defaultValue:
-                                "You reached the limit of {{limit}} questions.",
-                              limit,
-                            })
-                          : undefined
-                      }
-                    >
-                      {t("create.questions.add")}
-                    </button>
-                  </div>
-
-                  {/* LISTA DAS PERGUNTAS ADICIONADAS */}
-                  {questions.length > 0 && (
-                    <ul className="mt-4 space-y-2">
-                      {questions.map((question, index) => (
-                        <li
-                          key={index}
-                          className="p-3 sm:p-4 rounded-xl border border-slate-800 bg-slate-900/70 hover:bg-slate-900 transition"
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-7 flex items-center gap-4">
+                      <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-fuchsia-500/70 bg-fuchsia-700/25">
+                        <Sparkles size={30} />
+                      </span>
+                      <div>
+                        <h2 className="text-xl font-bold sm:text-2xl">
+                          {labels.aiTitle}
+                        </h2>
+                        <p className="mt-1 text-sm text-slate-300">
+                          {labels.aiSubtitle}
+                        </p>
+                      </div>
+                    </div>
+                    {!isPro && (
+                      <div className="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200">
+                        <p>{labels.upgrade}</p>
+                        <button
+                          type="button"
+                          onClick={() => nav("/")}
+                          className="mt-3 rounded-lg bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-2 font-bold text-slate-950"
                         >
-                          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-                            <div className="min-w-0">
-                              <div className="font-medium text-slate-100">
+                          {t("create.limit.upgradeCta", {
+                            defaultValue: "Upgrade",
+                          })}
+                        </button>
+                      </div>
+                    )}
+                    <label className="block text-sm font-semibold">
+                      {labels.topic}
+                      <textarea
+                        rows={3}
+                        maxLength={300}
+                        value={aiTopic}
+                        onChange={(e) => {
+                          setAiTopic(e.target.value);
+                          setAiRequestId(null);
+                        }}
+                        disabled={!isPro || !!aiPreview || aiLoading}
+                        placeholder={labels.topicPlaceholder}
+                        className={`${fieldClass} mt-2 resize-y`}
+                      />
+                    </label>
+                    <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                      <label className="block text-sm font-semibold">
+                        {labels.count}
+                        <select
+                          className={`${fieldClass} mt-2`}
+                          value={aiQuestionCount}
+                          onChange={(e) => {
+                            setAiQuestionCount(Number(e.target.value));
+                            setAiRequestId(null);
+                          }}
+                          disabled={!isPro || !!aiPreview || aiLoading}
+                        >
+                          {Array.from(
+                            { length: MAX_QUESTION_LIMIT },
+                            (_, i) => i + 1,
+                          ).map((n) => (
+                            <option key={n} value={n}>
+                              {n}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="block text-sm font-semibold">
+                        {labels.alternatives}
+                        <select
+                          className={`${fieldClass} mt-2`}
+                          value={aiOptionCount}
+                          onChange={(e) => {
+                            setAiOptionCount(Number(e.target.value));
+                            setAiRequestId(null);
+                          }}
+                          disabled={!isPro || !!aiPreview || aiLoading}
+                        >
+                          {[2, 3, 4, 5].map((n) => (
+                            <option key={n} value={n}>
+                              {n}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="block text-sm font-semibold">
+                        {labels.difficulty}
+                        <select
+                          className={`${fieldClass} mt-2`}
+                          value={aiDifficulty}
+                          onChange={(e) => {
+                            setAiDifficulty(e.target.value as Difficulty);
+                            setAiRequestId(null);
+                          }}
+                          disabled={!isPro || !!aiPreview || aiLoading}
+                        >
+                          <option value="easy">{labels.easy}</option>
+                          <option value="medium">{labels.medium}</option>
+                          <option value="hard">{labels.hard}</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                      <label className="block text-sm font-semibold">
+                        {t("create.fields.language")}
+                        <select
+                          className={`${fieldClass} mt-2`}
+                          value={language}
+                          onChange={(e) => {
+                            setLanguage(e.target.value as Lang);
+                            setAiRequestId(null);
+                          }}
+                          disabled={!isPro || !!aiPreview || aiLoading}
+                        >
+                          <option value="pt">{t("create.lang.pt")}</option>
+                          <option value="en">{t("create.lang.en")}</option>
+                          <option value="es">{t("create.lang.es")}</option>
+                        </select>
+                      </label>
+                      <label className="block text-sm font-semibold">
+                        {labels.timeLabel}
+                        <div className="relative mt-2">
+                          <Clock3
+                            size={18}
+                            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400"
+                          />
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={maxTimeInput}
+                            onChange={(e) => {
+                              if (/^\d{0,3}$/.test(e.target.value))
+                                setMaxTimeInput(e.target.value);
+                            }}
+                            onBlur={normalizeTime}
+                            disabled={
+                              !isPro || aiSaving || !!aiPreview || aiLoading
+                            }
+                            className={`${fieldClass} pl-10`}
+                            aria-invalid={!validTime}
+                          />
+                        </div>
+                        <span
+                          className={`mt-1 block text-xs font-normal ${validTime ? "text-slate-400" : "text-rose-300"}`}
+                        >
+                          {validTime ? labels.timeHint : labels.timeError}
+                        </span>
+                      </label>
+                    </div>
+                    <div className="mt-6 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4">
+                      <p className="font-semibold text-emerald-300">
+                        {labels.quota}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {labels.quotaNote}
+                      </p>
+                    </div>
+                    {aiUsage && (
+                      <p className="mt-3 text-sm text-slate-300">
+                        {labels.used}:{" "}
+                        <strong className="text-emerald-300">
+                          {aiUsage.used}/{aiUsage.limit}
+                        </strong>{" "}
+                        ({aiUsage.month} UTC)
+                      </p>
+                    )}
+                    {aiError && (
+                      <p
+                        role="alert"
+                        className="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200"
+                      >
+                        {aiError}
+                      </p>
+                    )}
+                    {!aiPreview ? (
+                      <button
+                        type="button"
+                        onClick={generateAiQuiz}
+                        disabled={!isPro || aiLoading || aiSaving || !validTime}
+                        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-indigo-600 px-5 py-3.5 font-bold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Sparkles size={20} />
+                        {aiLoading ? labels.generating : labels.ai}
+                      </button>
+                    ) : (
+                      <div className="mt-7 space-y-4 border-t border-slate-700 pt-6">
+                        <h3 className="text-xl font-bold">{aiPreview.title}</h3>
+                        <p className="text-sm text-amber-300">
+                          {labels.generated}
+                        </p>
+                        <ol className="space-y-3">
+                          {aiPreview.questions.map((question, index) => (
+                            <li
+                              key={index}
+                              className="rounded-xl border border-slate-700 bg-[#15213b] p-4"
+                            >
+                              <p className="font-semibold">
                                 {index + 1}. {question.text}
-                              </div>
-
-                              <ol className="text-sm mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
-                                {question.options.map((option, optionIndex) => (
+                              </p>
+                              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                                {question.options.map((option, i) => (
                                   <li
-                                    key={optionIndex}
-                                    className={`px-2 py-1 rounded break-words ${
-                                      optionIndex === question.correctIndex
-                                        ? "text-emerald-300 bg-emerald-500/10 border border-emerald-500/30"
-                                        : "text-slate-300"
-                                    }`}
+                                    key={i}
+                                    className={`rounded-lg px-3 py-2 text-sm ${i === question.correctIndex ? "border border-emerald-500/40 bg-emerald-500/10 text-emerald-200" : "bg-[#0d1730] text-slate-300"}`}
                                   >
-                                    {option}
+                                    {letter[i]}. {option}
                                   </li>
                                 ))}
-                              </ol>
-                            </div>
-
-                            <div className="sm:pl-3">
-                              <button
-                                type="button"
-                                onClick={() => removeLocalQuestion(index)}
-                                disabled={manualSaving}
-                                className="w-full sm:w-auto px-3 py-2 rounded-lg text-rose-100 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-sm disabled:opacity-50"
-                              >
-                                {t("create.questions.remove")}
-                              </button>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
-
-                {/* FOOTER */}
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
-                  <p className="text-xs text-amber-300/90 border border-amber-500/30 rounded-xl px-3 py-2 bg-amber-500/5">
-                    {isPro
-                      ? t("create.ttl.pro", {
-                          defaultValue:
-                            "Pro plan: your data will be kept without auto-deletion.",
-                        })
-                      : `⚠️ ${t("create.ttl")}`}
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={createGroup}
-                    disabled={manualSaving}
-                    className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-semibold hover:opacity-90 active:opacity-100 transition disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {manualSaving ? labels.saving : t("create.cta.createGroup")}
-                  </button>
-                </div>
-              </div>
-            )}
+                              </ul>
+                            </li>
+                          ))}
+                        </ol>
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                          <button
+                            type="button"
+                            onClick={discardAiQuiz}
+                            disabled={aiSaving}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-5 py-3 font-semibold text-rose-200 disabled:opacity-50"
+                          >
+                            <X size={18} />
+                            {labels.discard}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={saveAiQuiz}
+                            disabled={aiSaving || !isPro || !validTime}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 py-3 font-bold text-slate-950 disabled:opacity-50"
+                          >
+                            <CheckCircle2 size={19} />
+                            {aiSaving ? labels.saving : labels.save}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </main>
+            </div>
           </>
         )}
       </div>
