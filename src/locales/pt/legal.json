@@ -1,0 +1,130 @@
+
+{
+    "common": {
+    "backHome": "Voltar ao início",
+    "trust": "TopGameScore • Transparência e confiança",
+    "lastUpdated": "Última atualização",
+    "viewTerms": "Consultar Termos de Uso",
+    "viewPrivacy": "Consultar Política de Privacidade",
+    "questions": "Dúvidas sobre estas informações?",
+    "contact": "Entre em contato pelos canais oficiais do TopGameScore.",
+    "rightsReserved": "Todos os direitos reservados.",
+    "home": "Início",
+    "terms": "Termos de Uso",
+    "privacy": "Privacidade"
+  },
+  "terms": {
+    "hero": {
+      "title": "Termos de",
+      "highlight": "Uso",
+      "subtitle": "Conheça as regras, responsabilidades e condições para aproveitar o TopGameScore com segurança."
+    },
+    "documentTitle": "Termos de Uso do TopGameScore",
+    "documentDescription": "Conheça as regras e condições para utilizar nossos serviços.",
+    "imageAlt": "Nyxie apresentando os termos de uso",
+    "sections": {
+      "platform": {
+        "title": "Sobre a plataforma",
+        "p1": "O TopGameScore é uma plataforma digital destinada à criação e participação em quizzes multiplayer ao vivo, especialmente voltada a streamers, criadores de conteúdo e comunidades gamers.",
+        "p2": "A plataforma permite criar quizzes, compartilhar links ou códigos QR, receber participantes e acompanhar pontuações e classificações."
+      },
+      "acceptance": {
+        "title": "Aceitação dos termos",
+        "p1": "Ao acessar ou utilizar o TopGameScore, você declara ter lido e concordado com estes Termos de Uso e com nossa Política de Privacidade. Caso não concorde, deverá interromper a utilização dos serviços."
+      },
+      "accounts": {
+        "title": "Contas e responsabilidades",
+        "p1": "Os usuários devem fornecer informações corretas durante o cadastro e manter a segurança de suas credenciais de acesso.",
+        "p2": "O titular da conta é responsável pelas atividades realizadas por meio dela, devendo comunicar eventuais suspeitas de acesso não autorizado."
+      },
+      "quizzes": {
+        "title": "Criação e participação em quizzes",
+        "p1": "Os criadores são responsáveis pelas perguntas, respostas e demais conteúdos que inserirem em seus quizzes.",
+        "p2": "Não é permitido publicar conteúdos ilegais, discriminatórios, ofensivos ou que violem direitos de terceiros.",
+        "p3": "Quizzes finalizados não podem ser reabertos, com o objetivo de preservar a integridade dos resultados e rankings."
+      },
+      "plans": {
+        "title": "Planos e assinaturas",
+        "p1": "O TopGameScore oferece um plano gratuito, que permite criar quizzes com até 10 perguntas, e um plano Pro com funcionalidades adicionais.",
+        "p2": "O plano Pro permite quizzes com até 30 perguntas e acesso à geração de quizzes com inteligência artificial, observados os limites de utilização informados na plataforma.",
+        "p3": "Preços, periodicidade, condições de renovação, cancelamento e eventuais reembolsos devem ser consultados nas informações apresentadas durante a contratação, conforme a legislação aplicável."
+      },
+      "ai": {
+        "title": "Inteligência artificial",
+        "p1": "A Nyxie é a assistente de inteligência artificial do TopGameScore, utilizada para auxiliar na geração automática de quizzes no plano Pro.",
+        "p2": "Conteúdos gerados por inteligência artificial podem apresentar erros ou imprecisões. O usuário deve avaliar a adequação do conteúdo antes de utilizá-lo."
+      },
+      "prohibited": {
+        "title": "Condutas proibidas",
+        "p1": "É proibido utilizar a plataforma para atividades ilegais, tentativas de invasão, fraudes, manipulação indevida de resultados, distribuição de códigos maliciosos ou práticas que prejudiquem outros usuários ou a disponibilidade do serviço."
+      },
+      "availability": {
+        "title": "Disponibilidade e serviços externos",
+        "p1": "O funcionamento da plataforma pode depender de provedores de infraestrutura, autenticação, pagamentos e inteligência artificial. Poderão ocorrer indisponibilidades temporárias por manutenção, falhas técnicas ou fatores externos. Os direitos dos consumidores previstos na legislação aplicável permanecem preservados."
+      },
+      "changes": {
+        "title": "Alterações e contato",
+        "p1": "Estes termos poderão ser atualizados para refletir alterações nos serviços, requisitos legais ou procedimentos operacionais. Mudanças relevantes serão comunicadas quando necessário.",
+        "p2": "Dúvidas sobre os termos poderão ser encaminhadas pelos canais oficiais de atendimento disponibilizados pelo TopGameScore."
+      }
+    }
+  },
+  "privacy": {
+    "hero": {
+      "title": "Política de",
+      "highlight": "Privacidade",
+      "subtitle": "Entenda como seus dados pessoais são utilizados, protegidos e tratados ao acessar o TopGameScore."
+    },
+    "documentTitle": "Política de Privacidade do TopGameScore",
+    "documentDescription": "Entenda como os dados pessoais são tratados ao utilizar nossa plataforma.",
+    "imageAlt": "Nyxie apresentando a proteção de dados",
+    "sections": {
+      "introduction": {
+        "title": "Introdução",
+        "p1": "Esta Política de Privacidade explica como o TopGameScore trata dados pessoais relacionados ao acesso e à utilização da plataforma, respeitando a legislação aplicável, especialmente a Lei Geral de Proteção de Dados Pessoais (LGPD)."
+      },
+      "data": {
+        "title": "Dados pessoais tratados",
+        "p1": "Conforme a funcionalidade utilizada, poderão ser tratados dados como nome, e-mail, identificadores de conta, informações necessárias à autenticação e dados relacionados aos quizzes.",
+        "p2": "Durante a participação em partidas, poderão ser registrados identificadores dos jogadores, respostas, pontuações, classificações e informações técnicas necessárias ao funcionamento do serviço."
+      },
+      "purposes": {
+        "title": "Finalidades do tratamento",
+        "p1": "Os dados são tratados para permitir o cadastro e a autenticação, disponibilizar os quizzes, registrar respostas e pontuações, administrar assinaturas, prestar suporte, proteger a plataforma contra abusos e cumprir obrigações legais aplicáveis."
+      },
+      "authentication": {
+        "title": "Autenticação e serviços externos",
+        "p1": "O TopGameScore utiliza serviços de terceiros para viabilizar determinadas funcionalidades, incluindo infraestrutura tecnológica, autenticação, processamento de pagamentos e recursos de inteligência artificial.",
+        "p2": "O tratamento realizado por esses prestadores deverá observar as finalidades do serviço, os contratos aplicáveis e os requisitos legais pertinentes."
+      },
+      "sharing": {
+        "title": "Compartilhamento de dados",
+        "p1": "Dados poderão ser compartilhados com prestadores de serviço quando necessário à operação da plataforma, à execução de pagamentos, à segurança ou ao cumprimento de obrigações legais. O TopGameScore não autoriza o uso irrestrito dos dados por esses prestadores."
+      },
+      "security": {
+        "title": "Segurança das informações",
+        "p1": "A proteção de dados envolve medidas técnicas e organizacionais destinadas a reduzir riscos de acesso não autorizado, perda, alteração ou divulgação indevida de informações. Nenhum sistema conectado à internet, entretanto, está completamente livre de riscos."
+      },
+      "cookies": {
+        "title": "Cookies e tecnologias semelhantes",
+        "p1": "A plataforma poderá utilizar cookies, armazenamento local e tecnologias semelhantes para autenticação, preferências de idioma, funcionamento da aplicação e outras finalidades informadas ao usuário. Tecnologias não essenciais, quando utilizadas, deverão observar os requisitos legais de transparência e consentimento."
+      },
+      "retention": {
+        "title": "Retenção e exclusão de dados",
+        "p1": "Os dados pessoais deverão ser conservados pelo período necessário às finalidades informadas e às obrigações legais aplicáveis. Após esse período, poderão ser eliminados ou anonimizados, ressalvadas as hipóteses legais de conservação."
+      },
+      "rights": {
+        "title": "Direitos dos titulares",
+        "p1": "Nos termos da LGPD, o titular poderá solicitar, conforme aplicável, confirmação de tratamento, acesso, correção, anonimização, bloqueio, eliminação, portabilidade e informações sobre compartilhamento de seus dados, além de exercer outros direitos previstos em lei."
+      },
+      "changes": {
+        "title": "Alterações desta política",
+        "p1": "Esta política poderá ser atualizada para refletir mudanças na plataforma, nas práticas de tratamento de dados ou na legislação. A versão vigente será disponibilizada nesta página."
+      },
+      "contact": {
+        "title": "Contato sobre privacidade",
+        "p1": "Para dúvidas ou solicitações relacionadas ao tratamento de dados pessoais, utilize o canal oficial de privacidade indicado pelo responsável pelo TopGameScore. O endereço de contato deverá ser publicado nesta seção antes da disponibilização definitiva desta política."
+      }
+    }
+  }
+}

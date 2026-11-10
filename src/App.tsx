@@ -13,6 +13,8 @@ import SuperadminLoginPage from "./pages/SuperadminLoginPage";
 import SuperadminDashboardPage from "./pages/SuperadminDashboardPage";
 
 import SuperadminProtectedRoute from "./components/superadmin/SuperadminProtectedRoute";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 const router = createBrowserRouter([
   { path: "/", element: <Home /> },
@@ -20,6 +22,8 @@ const router = createBrowserRouter([
   { path: "/create", element: <CreateQuizPage /> },
   { path: "/dashboard", element: <DashboardPage /> },
   { path: "/success", element: <SuccessPage /> },
+  { path: "/terms", element: <Terms /> },
+  { path: "/privacy", element: <Privacy /> },
 
   { path: "/host/:groupId", element: <HostPage /> },
   { path: "/play/:groupId", element: <PlayPage /> },
