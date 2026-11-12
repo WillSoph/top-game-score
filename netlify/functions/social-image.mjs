@@ -3,7 +3,8 @@ export default async (request) => {
   const url = new URL(request.url);
   const file = url.searchParams.get("file");
 
-  if (!file || !/^[a-zA-Z0-9._-]+\.png$/.test(file)) {
+  // Aceita somente nomes seguros de arquivos PNG, JPG e JPEG
+  if (!file || !/^[a-zA-Z0-9._-]+\.(png|jpg|jpeg)$/i.test(file)) {
     return new Response("Arquivo inválido", { status: 400 });
   }
 
@@ -28,10 +29,14 @@ export default async (request) => {
       });
     }
 
+    const contentType = file.toLowerCase().endsWith(".png")
+      ? "image/png"
+      : "image/jpeg";
+
     return new Response(response.body, {
       status: 200,
       headers: {
-        "Content-Type": "image/png",
+        "Content-Type": contentType,
         "Cache-Control": "public, max-age=3600",
       },
     });
